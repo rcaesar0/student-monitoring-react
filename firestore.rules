@@ -1,0 +1,77 @@
+// Firestore rules for the NEXT step (connecting Firebase). Not used by the local version.
+// Paste into Firebase Console > Firestore > Rules.
+//
+// Collections: users, admins, teachers, guardians, students, rooms, roomStudents,
+// guardianLinks (id = guardianId_studentId), assessments, grades, attendance,
+// announcements, activities.
+//
+// Known gaps to close with Cloud Functions before going live:
+//  - Guardian linking (code + LRN + birthdate check and attempt lockout) must run server-side.
+//  - Teacher/guardian account creation and temporary passwords need the Admin SDK.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function signedIn() { return request.auth != null; }
+    function roleOf() { return get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role; }
+    function isAdmin() { return signedIn() && roleOf() == 'Admin'; }
+    function isTeacher() { return signedIn() && roleOf() == 'Teacher'; }
+    function isGuardian() { return signedIn() && roleOf() == 'Guardian'; }
+    function teachesRoom(roomId) {
+      return isTeacher() && get(/databases/$(db)/documents/rooms/$(roomId)).data.teacherId == request.auth.uid;
+    }
+    function linkedTo(studentId) {
+      return isGuardian()
+        && exists(/databases/$(db)/documents/guardianLinks/$(request.auth.uid + '_' + studentId))
+        && get(/databases/$(db)/documents/guardianLinks/$(request.auth.uid + '_' + studentId)).data.status == 'Approved';
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow create: if request.auth.uid == uid && request.resource.data.role == 'Guardian';
+      allow write: if isAdmin();
+    }
+    match /admins/{id}    { allow read, write: if isAdmin(); }
+    match /teachers/{id}  { allow read: if request.auth.uid == id || isAdmin();
+                            allow create, delete: if isAdmin();
+                            allow update: if request.auth.uid == id || isAdmin(); }
+    match /guardians/{id} { allow read: if request.auth.uid == id || isAdmin() || isTeacher();
+                            allow create: if request.auth.uid == id;
+                            allow update: if request.auth.uid == id || isAdmin(); }
+
+    match /students/{id} {
+      allow read: if isAdmin() || isTeacher() || linkedTo(id);
+      allow write: if isAdmin();
+    }
+    match /rooms/{id}        { allow read: if signedIn(); allow write: if isAdmin() || teachesRoom(id); }
+    match /roomStudents/{id} { allow read: if signedIn(); allow write: if isAdmin(); }
+
+    match /guardianLinks/{id} {
+      allow read: if isAdmin() || resource.data.guardianId == request.auth.uid || teachesRoom(resource.data.roomId);
+      allow create: if isGuardian() && request.resource.data.guardianId == request.auth.uid
+                    && request.resource.data.status == 'Pending'
+                    && id == request.auth.uid + '_' + request.resource.data.studentId;
+      allow update: if isAdmin() || teachesRoom(resource.data.roomId);
+    }
+
+    match /attendance/{id} {
+      allow read: if isAdmin() || teachesRoom(resource.data.roomId) || linkedTo(resource.data.studentId);
+      allow write: if isAdmin() || teachesRoom(request.resource.data.roomId);
+      allow delete: if isAdmin() || teachesRoom(resource.data.roomId);
+    }
+    match /assessments/{id} {
+      allow read: if isAdmin() || teachesRoom(resource.data.roomId) || (isGuardian() && resource.data.released == true);
+      allow write: if isAdmin() || teachesRoom(request.resource.data.roomId);
+      allow delete: if isAdmin() || teachesRoom(resource.data.roomId);
+    }
+    match /grades/{id} {
+      allow read: if isAdmin() || teachesRoom(resource.data.roomId) || linkedTo(resource.data.studentId);
+      allow write: if isAdmin() || teachesRoom(request.resource.data.roomId);
+      allow delete: if isAdmin() || teachesRoom(resource.data.roomId);
+    }
+    match /{col}/{id} {
+      allow read: if (col == 'announcements' || col == 'activities') && signedIn();
+      allow create: if (col == 'announcements' || col == 'activities') && (isAdmin() || teachesRoom(request.resource.data.roomId));
+      allow update, delete: if (col == 'announcements' || col == 'activities') && (isAdmin() || teachesRoom(resource.data.roomId));
+    }
+  }
+}
