@@ -3,25 +3,27 @@ import { useApp } from '../../context/AppContext';
 import PhoneField from '../../components/PhoneField';
 import ContactField from '../../components/ContactField';
 import VerifyCode from '../../components/VerifyCode';
+import TermsModal, { TERMS_VERSION } from '../../components/TermsModal';
 import { emailTaken, phoneTaken } from '../../services/auth';
-import { toPhone } from '../../utils/phone';
+import { boxToPhone, parsePhone } from '../../utils/phone';
 import { MIN_PASSWORD_LENGTH } from '../../config';
 
 const STEPS = ['About you', 'Contact & address', 'Password', 'Verify'];
 const RELATIONS = ['Mother', 'Father', 'Grandmother', 'Grandfather', 'Aunt', 'Uncle', 'Sibling', 'Legal guardian', 'Other'];
-const CONTACT_ERROR = 'Please enter a valid mobile number or email address.';
-const EMERGENCY_ERROR = 'Please enter a valid mobile number.';
 const EMPTY = {
   firstName: '', middleName: '', lastName: '', relationship: '', relationshipOther: '', occupation: '',
   contact: '', street: '', barangay: '', city: '', province: '',
   emName: '', emPhone: '', password: '', confirm: '',
 };
 
+const BAD_CONTACT = 'Please enter a valid mobile number or email address.';
+
 // One box for the sign-in contact: anything with an @ is an email, anything else is a mobile number.
+// phone is '' when the text is not a valid mobile number (wrong first digit, letters, too short...).
 const parseContact = (raw) => {
   const v = String(raw || '').trim();
   if (v.includes('@')) return { email: v, phone: '' };
-  return { email: '', phone: toPhone(v) };
+  return { email: '', phone: parsePhone(v) };
 };
 
 // Only guardians can sign up. Teacher accounts are created by the admin.
@@ -31,6 +33,8 @@ export default function Signup({ go }) {
   const [f, setF] = useState(EMPTY);
   const [step, setStep] = useState(0);
   const [show, setShow] = useState(false);
+  const [agree, setAgree] = useState(false);
+  const [terms, setTerms] = useState(false);
   const [error, setError] = useState('');
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
@@ -43,16 +47,17 @@ export default function Signup({ go }) {
     }
     if (s === 1) {
       const { phone, email } = parseContact(f.contact);
-      const valid = email ? /^\S+@\S+\.\S+$/.test(email) : !!phone;
-      if (!valid) return CONTACT_ERROR;
+      if (!email && !phone) return BAD_CONTACT;
+      if (email && !/^\S+@\S+\.\S+$/.test(email)) return BAD_CONTACT;
       if (phone && phoneTaken(db, phone)) return 'That mobile number is already registered.';
       if (email && emailTaken(db, email)) return 'That email is already registered.';
       if (!f.street.trim() || !f.barangay.trim() || !f.city.trim() || !f.province.trim()) return 'Please complete your address.';
-      if (f.emPhone.trim() && !toPhone(f.emPhone)) return EMERGENCY_ERROR;
+      if (f.emPhone && !boxToPhone(f.emPhone)) return BAD_CONTACT;
     }
     if (s === 2) {
       if (f.password.length < MIN_PASSWORD_LENGTH) return `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
       if (f.password !== f.confirm) return 'Passwords do not match.';
+      if (!agree) return 'Please read and accept the Terms and Agreement to continue.';
     }
     return '';
   }
@@ -75,8 +80,9 @@ export default function Signup({ go }) {
       occupation: f.occupation.trim(),
       phone, email,
       street: f.street.trim(), barangay: f.barangay.trim(), city: f.city.trim(), province: f.province.trim(),
-      emName: f.emName.trim(), emPhone: toPhone(f.emPhone),
+      emName: f.emName.trim(), emPhone: boxToPhone(f.emPhone),
       verifiedVia: via.type,
+      termsAcceptedAt: new Date().toISOString(), termsVersion: TERMS_VERSION,
       password: f.password, mustChangePassword: false,
       status: 'Active', failedLinks: 0, lockedUntil: 0,
     });
@@ -94,7 +100,7 @@ export default function Signup({ go }) {
   const header = (
     <>
       <h2>Create your guardian account</h2>
-      <p className="muted">After signing up, you will link your child using the LRN and the link code from the school office.</p>
+      <p className="muted">After signing up, you will link your child using the room code from their teacher.</p>
       <ol className="stepper" aria-label="Sign up steps">
         {STEPS.map((s, i) => (
           <li key={s} className={i === step ? 'on' : i < step ? 'done' : ''}>
@@ -146,7 +152,7 @@ export default function Signup({ go }) {
       {step === 1 && (
         <>
           <h4 className="form-section">Contact</h4>
-          <ContactField value={f.contact} onChange={(contact) => setF({ ...f, contact })} invalid={error === CONTACT_ERROR} />
+          <ContactField value={f.contact} onChange={(contact) => setF({ ...f, contact })} />
           <p className="hint">You can sign in with it, and we send your verification code there. You can add the other one later in your profile.</p>
 
           <h4 className="form-section">Home address</h4>
@@ -160,7 +166,7 @@ export default function Signup({ go }) {
           <h4 className="form-section">Emergency contact (optional)</h4>
           <div className="grid2">
             <label>Name<input value={f.emName} onChange={set('emName')} /></label>
-            <PhoneField label="Mobile number" value={f.emPhone} onChange={(emPhone) => setF({ ...f, emPhone })} invalid={error === EMERGENCY_ERROR} />
+            <PhoneField label="Mobile number" value={f.emPhone} onChange={(emPhone) => setF({ ...f, emPhone })} />
           </div>
         </>
       )}
@@ -176,6 +182,15 @@ export default function Signup({ go }) {
             <span>Show passwords</span>
           </label>
           <p className="hint">Use at least {MIN_PASSWORD_LENGTH} characters. Next, we will send a code to confirm your mobile number or email.</p>
+
+          <label className="check terms-check">
+            <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+            <span>
+              I have read and agree to the{' '}
+              <button type="button" className="text-btn inline" onClick={() => setTerms(true)}>Terms and Agreement</button>
+            </span>
+          </label>
+          {terms && <TermsModal onClose={() => setTerms(false)} onAgree={() => { setAgree(true); setTerms(false); }} />}
         </>
       )}
 

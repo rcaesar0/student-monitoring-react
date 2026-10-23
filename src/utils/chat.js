@@ -5,27 +5,29 @@ import { fullName } from './helpers';
 export const threadKey = (a, b) => [a, b].sort().join('__');
 
 // Each person's own chat settings live on their account: { [otherPersonId]: { muted, pinned, clearedAt } }.
-// clearedAt is when they deleted the conversation. It only hides older messages from them.
+// clearedAt is when they deleted the chat. It only hides older messages from them. The other person keeps theirs.
 export const chatPrefsOf = (db, userId) => {
   const u = [...(db.teachers || []), ...(db.guardians || [])].find((x) => x.id === userId);
   return (u && u.chatPrefs) || {};
 };
 
-// The messages this user can still see (their own, minus conversations they deleted).
+// The messages this user can still see: their own, minus chats they deleted and messages they removed "for me".
+// A message removed "for everyone" stays in the list (it shows as "This message was deleted").
 export function visibleMessages(db, userId) {
   const prefs = chatPrefsOf(db, userId);
   return (db.messages || []).filter((m) => {
     if (m.from !== userId && m.to !== userId) return false;
+    if ((m.deletedFor || []).includes(userId)) return false;
     const other = m.from === userId ? m.to : m.from;
     return m.at > (prefs[other]?.clearedAt || 0);
   });
 }
 
 // How many messages are waiting for this user (drives the red badge on the chat button).
-// Muted conversations do not count.
+// Muted chats and messages that were deleted for everyone do not count.
 export function unreadChat(db, userId) {
   const prefs = chatPrefsOf(db, userId);
-  return visibleMessages(db, userId).filter((m) => m.to === userId && !m.read && !prefs[m.from]?.muted).length;
+  return visibleMessages(db, userId).filter((m) => m.to === userId && !m.read && !m.deleted && !prefs[m.from]?.muted).length;
 }
 
 // Who this user is allowed to message.

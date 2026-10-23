@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { roleCollection } from '../../services/auth';
+import PasswordField from '../../components/PasswordField';
 import { MIN_PASSWORD_LENGTH } from '../../config';
 
 // Shown before anything else when an account still has a temporary password.
@@ -27,8 +28,8 @@ export default function ChangePassword() {
           <p className="muted">
             Welcome, {user.firstName}. For security, replace the temporary password before continuing.
           </p>
-          <label>New password<input type="password" autoFocus value={next} onChange={(e) => setNext(e.target.value)} /></label>
-          <label>Confirm new password<input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></label>
+          <PasswordField label="New password" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" autoFocus />
+          <PasswordField label="Confirm new password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
           {error && <div className="error">{error}</div>}
           <button type="submit" className="primary wide">Save and continue</button>
           <button type="button" className="text-btn" onClick={logout}>Sign out</button>

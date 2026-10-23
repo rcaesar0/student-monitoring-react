@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from './UI';
 import VerifyCode from './VerifyCode';
+import PasswordField from './PasswordField';
 import { useApp } from '../context/AppContext';
 import { roleCollection } from '../services/auth';
 import { MIN_PASSWORD_LENGTH } from '../config';
@@ -11,7 +12,6 @@ export default function ChangePasswordModal({ onClose }) {
   const { user, repo } = useApp();
   const [phase, setPhase] = useState('form'); // form | verify | done
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
-  const [show, setShow] = useState(false);
   const [error, setError] = useState('');
   const set = (k) => (e) => setPw({ ...pw, [k]: e.target.value });
 
@@ -35,8 +35,6 @@ export default function ChangePasswordModal({ onClose }) {
     setPhase('done');
   }
 
-  const type = show ? 'text' : 'password';
-
   return (
     <Modal title={phase === 'verify' ? 'Verify it is you' : 'Change password'} onClose={onClose}>
       {phase === 'done' && (
@@ -52,13 +50,9 @@ export default function ChangePasswordModal({ onClose }) {
 
       {phase === 'form' && (
         <form onSubmit={submit}>
-          <label>Current password<input type={type} value={pw.current} onChange={set('current')} autoComplete="current-password" autoFocus /></label>
-          <label>New password<input type={type} value={pw.next} onChange={set('next')} autoComplete="new-password" /></label>
-          <label>Confirm new password<input type={type} value={pw.confirm} onChange={set('confirm')} autoComplete="new-password" /></label>
-          <label className="check">
-            <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
-            <span>Show passwords</span>
-          </label>
+          <PasswordField label="Current password" value={pw.current} onChange={set('current')} autoComplete="current-password" autoFocus />
+          <PasswordField label="New password" value={pw.next} onChange={set('next')} autoComplete="new-password" />
+          <PasswordField label="Confirm new password" value={pw.confirm} onChange={set('confirm')} autoComplete="new-password" />
           <p className="hint">Use at least {MIN_PASSWORD_LENGTH} characters. Next, we will send a code to confirm it is you.</p>
           {error && <div className="error">{error}</div>}
           <div className="form-actions">

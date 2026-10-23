@@ -11,7 +11,9 @@ import { roleCollection, emailTaken, phoneTaken } from '../services/auth';
 const RELATIONS = ['Mother', 'Father', 'Grandmother', 'Grandfather', 'Aunt', 'Uncle', 'Sibling', 'Legal guardian', 'Other'];
 const PHONE_ERROR = 'Please enter a valid mobile number.';
 
-// Shared by all roles. Changing the password is in the account menu (top right).
+// The profile settings page (account menu > Edit profile).
+// Names are set by the school and cannot be edited here.
+// Notification options are in the account menu under Notifications. Changing the password is there too.
 export default function ProfilePanel() {
   const { db, user, repo } = useApp();
   const col = roleCollection(user.role);
@@ -20,7 +22,6 @@ export default function ProfilePanel() {
   const hasAddress = guardian || teacher;
 
   const [f, setF] = useState(() => ({
-    firstName: user.firstName || '', middleName: user.middleName || '', lastName: user.lastName || '',
     relationship: user.relationship || '', relationshipOther: user.relationshipOther || '', occupation: user.occupation || '',
     phone: phoneToInput(user.phone), email: user.email || '', personalEmail: user.personalEmail || '',
     street: user.street || '', barangay: user.barangay || '', city: user.city || '', province: user.province || '',
@@ -57,13 +58,12 @@ export default function ProfilePanel() {
   function save() {
     const fail = (text, field = '') => { setBad(field); setMsg({ type: 'error', text }); };
     setBad('');
-    if (!f.firstName.trim() || !f.lastName.trim()) return fail('First and last name are required.');
 
     const phone = toPhone(f.phone);
     if (f.phone.trim() && !phone) return fail(PHONE_ERROR, 'phone');
     if (phone && phoneTaken(db, phone, user.id)) return fail('That mobile number is already used by another account.', 'phone');
 
-    const patch = { firstName: f.firstName.trim(), middleName: f.middleName.trim(), lastName: f.lastName.trim(), phone };
+    const patch = { phone };
 
     if (guardian) {
       const email = f.email.trim();
@@ -112,9 +112,9 @@ export default function ProfilePanel() {
 
       <Panel title="Personal information">
         <div className="grid2">
-          <label>First name<input value={f.firstName} onChange={set('firstName')} /></label>
-          <label>Last name<input value={f.lastName} onChange={set('lastName')} /></label>
-          <label>Middle name<input value={f.middleName} onChange={set('middleName')} /></label>
+          <label>First name<input value={user.firstName || ''} disabled /></label>
+          <label>Last name<input value={user.lastName || ''} disabled /></label>
+          <label>Middle name<input value={user.middleName || ''} disabled /></label>
           {guardian && (
             <label>
               Relationship to the child
@@ -131,6 +131,7 @@ export default function ProfilePanel() {
         {guardian && f.relationship === 'Other' && (
           <label>Please specify<input value={f.relationshipOther} onChange={set('relationshipOther')} placeholder="Please specify" /></label>
         )}
+        <p className="hint">Your name is set by the school. To correct it, please contact the school office.</p>
       </Panel>
 
       <Panel title="Contact">

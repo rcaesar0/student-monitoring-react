@@ -7,8 +7,8 @@ import { Avatar } from './UI';
 import Icon from './Icon';
 import { createPortal } from 'react-dom';
 import ChangePasswordModal from './ChangePasswordModal';
+import NotificationSettings from './NotificationSettings';
 import { useAutoArchive } from '../utils/autoArchive';
-import { useGoHomeOnApproval } from '../utils/goHome';
 import { showPhone } from '../utils/phone';
 
 const NAV_ICON = {
@@ -92,10 +92,18 @@ function ChatButton({ user, setView }) {
 function ProfileMenu({ user, logout, theme, toggleTheme, setView, menuItems = [] }) {
   const [open, setOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const ref = useDismiss(open, setOpen);
   const go = (fn) => () => { setOpen(false); fn(); };
   useAutoArchive(); // posts whose deadline or date has passed move to the teacher's archive
-  useGoHomeOnApproval(user, setView); // a guardian is sent home once the school office approves a child
+
+  // Tapping a notification outside the app brings the app back and opens the page it was about.
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return undefined;
+    const onMessage = (e) => { if (e.data?.type === 'notification-click' && e.data.view) setView(e.data.view); };
+    navigator.serviceWorker.addEventListener('message', onMessage);
+    return () => navigator.serviceWorker.removeEventListener('message', onMessage);
+  }, [setView]);
 
   return (
     <div className="menu-wrap" ref={ref}>
@@ -120,6 +128,9 @@ function ProfileMenu({ user, logout, theme, toggleTheme, setView, menuItems = []
           <button className="dropdown-item" onClick={go(() => setPwOpen(true))}>
             <Icon name="key" size={18} /><span>Change password</span>
           </button>
+          <button className="dropdown-item" onClick={go(() => setNotifOpen(true))}>
+            <Icon name="bell" size={18} /><span>Notifications</span>
+          </button>
           {menuItems.map((m) => (
             <button key={m.label} className="dropdown-item" onClick={go(m.onClick)}>
               <Icon name={m.icon} size={18} /><span>{m.label}</span>
@@ -137,6 +148,7 @@ function ProfileMenu({ user, logout, theme, toggleTheme, setView, menuItems = []
         </div>
       )}
       {pwOpen && createPortal(<ChangePasswordModal onClose={() => setPwOpen(false)} />, document.body)}
+      {notifOpen && createPortal(<NotificationSettings onClose={() => setNotifOpen(false)} />, document.body)}
     </div>
   );
 }

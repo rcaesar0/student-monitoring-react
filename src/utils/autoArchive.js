@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { makeLinkCode } from './linkCodes';
+import { useNotifySound } from './useNotifySound';
 
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -17,10 +18,12 @@ export function isPastDue(post, now = new Date()) {
 export const isDone = (post) => !!post.dueDate && (post.autoArchived === true || (post.status !== 'Archived' && isPastDue(post)));
 
 // Background jobs that run while someone is signed in:
+// everyone: the chosen notification sound plays when something new arrives.
 // teachers: posts whose schedule has passed move to the Archive by themselves.
 // admins: every student that has no link code yet gets one (older students).
 export function useAutoArchive() {
   const { db, repo, user } = useApp();
+  useNotifySound();
 
   useEffect(() => {
     if (!user || user.role !== 'Teacher') return undefined;

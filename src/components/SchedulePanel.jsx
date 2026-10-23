@@ -5,11 +5,18 @@ import { fullName } from '../utils/helpers';
 import { slotsOnDay, todayName, timeRange } from '../utils/schedule';
 
 // Today's classes only. slots come from slotsOf() (the whole week); this picks the ones that meet today.
+// The same class at the same time is listed once, even if it was added twice.
 // Guardians also see the teacher's name and the child. The admin sets the times, nobody here edits them.
 export default function SchedulePanel({ slots, showTeacher = false, showKids = false, title = "Today's schedule", emptyText = 'No class schedule for today.' }) {
   const { db } = useApp();
   const day = todayName();
-  const today = slotsOnDay(slots, day);
+  const seen = new Set();
+  const today = slotsOnDay(slots, day).filter((s) => {
+    const key = `${s.room.id}|${s.start}|${s.end}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 
   return (
     <Panel title={title} actions={<Badge tone="neutral">{day}</Badge>}>

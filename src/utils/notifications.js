@@ -1,5 +1,6 @@
 import { approvedChildren, roomsOfStudent } from './selectors';
 import { fullName, formatDate, dateStr } from './helpers';
+import { isLive } from './meet';
 
 // Builds the bell menu for each role. `unread` is what the red badge counts.
 // Guardians remember which posts they have already seen in user.seenPosts.
@@ -42,7 +43,7 @@ export function notificationsFor(db, user) {
     };
   }
 
-  // Guardian: new posts, attendance alerts, grades released, link approvals, and other guardians linking to the same child (last 7 days).
+  // Guardian: new posts, attendance alerts, grades released, live classes, link approvals, and other guardians linking to the same child (last 7 days).
   const kids = approvedChildren(db, user.id);
   const kidById = new Map(kids.map((c) => [c.id, c]));
   const rooms = new Map(kids.flatMap((c) => roomsOfStudent(db, c.id)).map((r) => [r.id, r]));
@@ -72,6 +73,15 @@ export function notificationsFor(db, user) {
       sub: `${rooms.get(a.roomId).subject} · ${roomName(a.roomId)}`, view: 'Grades', roomId: a.roomId,
     }));
 
+  // A teacher shared a Google Meet link for one of the rooms.
+  const meets = [...rooms.values()]
+    .filter(isLive)
+    .map((r) => ({
+      id: `meet-${r.id}-${r.meet.at}`, at: dateStr(new Date(r.meet.at)),
+      title: `${r.subject}: class on Google Meet is live`,
+      sub: `${r.name} · open your home page to join`, view: 'My Children', roomId: null,
+    }));
+
   // Your own request was approved.
   const approvals = db.guardianLinks
     .filter((l) => l.guardianId === user.id && l.status === 'Approved' && (l.approvedAt || '') >= since && kidById.has(l.studentId))
@@ -93,7 +103,7 @@ export function notificationsFor(db, user) {
       };
     });
 
-  const all = [...posts, ...attendance, ...grades, ...approvals, ...newLinks].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 12);
+  const all = [...posts, ...attendance, ...grades, ...meets, ...approvals, ...newLinks].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 12);
   const pending = db.guardianLinks.filter((l) => l.guardianId === user.id && l.status === 'Pending').length;
   const items = [
     ...(pending ? [{ id: 'pending', title: 'Waiting for approval', sub: `${pending} request${pending > 1 ? 's' : ''} sent to the school office`, view: 'My Children', fresh: false }] : []),

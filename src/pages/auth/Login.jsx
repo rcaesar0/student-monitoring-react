@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { authenticate } from '../../services/auth';
 import { useApp } from '../../context/AppContext';
 import { showCode } from '../../utils/linkCodes';
+import PasswordField from '../../components/PasswordField';
 
 export default function Login({ go }) {
   const { db, login } = useApp();
@@ -24,12 +25,9 @@ export default function Login({ go }) {
       <h2>Sign in</h2>
       <label>
         Email or mobile number
-        <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username"  />
+        <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" placeholder="Email or mobile number" />
       </label>
-      <label>
-        Password
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
-      </label>
+      <PasswordField label="Password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
       {error && <div className="error">{error}</div>}
       <button type="submit" className="primary wide">Sign In</button>
       <div className="auth-links">

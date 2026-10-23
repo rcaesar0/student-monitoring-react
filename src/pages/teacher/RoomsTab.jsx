@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Panel, Empty, Modal, Badge, Avatar } from '../../components/UI';
+import MeetPanel from '../../components/MeetPanel';
 import { useApp } from '../../context/AppContext';
 import { fullName, initials, uniqueCode, formatDate } from '../../utils/helpers';
 import { rosterOf, attendanceSummary } from '../../utils/selectors';
-import { studentGrade, categoryOf, quarterOf, fmt, remarkOf } from '../../utils/grading';
-import { DEFAULT_QUARTER } from '../../config';
+import { studentGrade, categoryOf, quarterOf, quarterForDate, fmt, remarkOf } from '../../utils/grading';
 
 export default function RoomsTab({ room }) {
   const { db, repo } = useApp();
@@ -31,13 +31,15 @@ export default function RoomsTab({ room }) {
   return (
     <>
       <Panel title="Room code">
-          <p className="muted">Guardians now link their child with the LRN and the link slip from the school office. This room code is not used for linking.</p>
+        <p className="muted">Guardians now link their child with the LRN and the link slip from the school office. This room code is not used for linking.</p>
         <div className="row-actions code-line">
           <code className="code-lg">{room.code}</code>
           <button className="btn-sm" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
           <button className="btn-sm" onClick={() => repo.update('rooms', room.id, { code: uniqueCode(db) })}>Reset code</button>
         </div>
       </Panel>
+
+      <MeetPanel room={room} />
 
       <Panel title={`${room.name} · ${students.length} students`}>
         {students.length ? (
@@ -64,7 +66,7 @@ function StudentProfile({ student, room, onClose }) {
   const { db } = useApp();
   const sum = attendanceSummary(db, student.id, room.id);
   const recent = db.attendance.filter((a) => a.studentId === student.id && a.roomId === room.id).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
-  const quarter = DEFAULT_QUARTER;
+  const quarter = quarterForDate();
   const assessments = db.assessments.filter((a) => a.roomId === room.id && quarterOf(a) === quarter);
   const grade = studentGrade(db, room.id, student.id, false, quarter);
   const scoreOf = (aid) => db.grades.find((g) => g.id === `${aid}_${student.id}`)?.score;

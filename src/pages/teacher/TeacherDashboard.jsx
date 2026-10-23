@@ -111,7 +111,7 @@ function Overview({ rooms, attention, open }) {
         )}
       </Panel>
 
-      <SchedulePanel slots={slotsOf(rooms)} emptyText="No class schedule for today." />
+      <SchedulePanel slots={slotsOf(rooms)} emptyText="No class schedule for today." />      <SchedulePanel slots={slotsOf(rooms)} emptyText="No class schedule yet. The school office sets the class times." />
 
       <Panel title="My rooms">
         {rooms.length ? (

@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Panel, Empty, Modal, Badge, Avatar } from '../../components/UI';
 import { useApp } from '../../context/AppContext';
-import { fullName, initials, uniqueCode } from '../../utils/helpers';
+import { fullName, initials, uniqueCode, uid } from '../../utils/helpers';
 import { byName } from '../../utils/selectors';
 import { sectionsOf, sectionKey, sectionRoster, enrollInSection, removeFromSection } from '../../utils/sections';
+import { WEEKDAYS, slotsOf, timeRange } from '../../utils/schedule';
 import { GRADE_LEVELS } from '../../config';
 
 // A section (for example Grade 6 - Rizal) holds one room per subject.
 // Students are enrolled in the section once and land in every subject.
+// The class schedule is set here by the admin. Teachers and guardians can only view it.
 export default function SectionsTab() {
   const { db } = useApp();
   const [selected, setSelected] = useState(null); // section key
@@ -114,6 +116,62 @@ function SubjectModal({ section, onClose, onCreated }) {
   );
 }
 
+// The weekly class times of the section's subjects. Only the admin can change them.
+// A time is refused when it overlaps another subject of the section, or another class of the same teacher.
+function SectionSchedule({ section }) {
+  const { db, repo } = useApp();
+  const [f, setF] = useState({ roomId: section.rooms[0]?.id || '', day: 'Monday', start: '08:00', end: '09:00' });
+  const [error, setError] = useState('');
+
+  const slots = slotsOf(section.rooms);
+  const room = section.rooms.find((r) => r.id === f.roomId) || section.rooms[0];
+
+  function add(e) {
+    e.preventDefault();
+    if (!room) return setError('Add a subject to this section first.');
+    if (!f.start || !f.end) return setError('Pick a start and an end time.');
+    if (f.end <= f.start) return setError('The end time must be after the start time.');
+
+    const teacherRooms = db.rooms.filter((r) => r.status === 'Active' && r.teacherId === room.teacherId);
+    const checkRooms = [...new Map([...section.rooms, ...teacherRooms].map((r) => [r.id, r])).values()];
+    const clash = slotsOf(checkRooms).find((s) => s.day === f.day && f.start < s.end && f.end > s.start);
+    if (clash) return setError(`That overlaps ${clash.room.subject} (${clash.room.name}) on ${clash.day}, ${timeRange(clash)}.`);
+
+    repo.update('rooms', room.id, { schedule: [...(room.schedule || []), { id: uid(), day: f.day, start: f.start, end: f.end }] });
+    setError('');
+  }
+
+  const remove = (s) => repo.update('rooms', s.room.id, { schedule: (s.room.schedule || []).filter((x) => x.id !== s.id) });
+
+  return (
+    <Panel title="Class schedule">
+      <p className="muted">When each subject meets every week. Teachers and guardians can see it on their home pages but cannot change it.</p>
+      {slots.length ? (
+        slots.map((s) => (
+          <div className="row" key={s.id}>
+            <span><b>{s.day}</b> <small>{timeRange(s)} · {s.room.subject}</small></span>
+            <button className="danger-outline btn-sm" onClick={() => remove(s)}>Remove</button>
+          </div>
+        ))
+      ) : (
+        <p className="hint">No class times yet. Add the first one below.</p>
+      )}
+      <form className="sched-form admin-sched" onSubmit={add}>
+        <select value={room?.id || ''} onChange={(e) => setF({ ...f, roomId: e.target.value })} aria-label="Subject">
+          {section.rooms.map((r) => <option key={r.id} value={r.id}>{r.subject}</option>)}
+        </select>
+        <select value={f.day} onChange={(e) => setF({ ...f, day: e.target.value })} aria-label="Day">
+          {WEEKDAYS.map((d) => <option key={d} value={d}>{d}</option>)}
+        </select>
+        <input type="time" value={f.start} onChange={(e) => setF({ ...f, start: e.target.value })} aria-label="Start time" />
+        <input type="time" value={f.end} onChange={(e) => setF({ ...f, end: e.target.value })} aria-label="End time" />
+        <button type="submit" className="primary">Add</button>
+      </form>
+      {error && <div className="error">{error}</div>}
+    </Panel>
+  );
+}
+
 function SectionDetail({ section, onBack }) {
   const { db, repo } = useApp();
   const [query, setQuery] = useState('');
@@ -182,6 +240,8 @@ function SectionDetail({ section, onBack }) {
           <button className="danger-outline btn-sm" onClick={archiveSection}>Archive section</button>
         </div>
       </Panel>
+
+      <SectionSchedule section={section} />
 
       <Panel title="Enrolled students">
         {gaps.length > 0 && (

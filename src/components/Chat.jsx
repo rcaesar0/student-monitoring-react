@@ -5,21 +5,27 @@ import { useApp } from '../context/AppContext';
 import { threadKey, chatPrefsOf, visibleMessages } from '../utils/chat';
 import { roleCollection } from '../services/auth';
 import { initials } from '../utils/helpers';
-import { usePersistentState } from '../utils/usePersistentState';
 
 const clock = (t) => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 const dayLabel = (t) => new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 
 // Chat between a guardian and a teacher. Messages live in db.messages, so they sync like everything else.
 // Opening Messages always shows the list first: recent chats, then everyone you can start a new chat with.
+//
+// Chat options (the ⋮ next to a person): pin, mute, mark as read and Delete chat.
+//   Delete chat only clears your copy of the conversation. The person stays in your list and keeps their copy.
+// Message options (tap a message): Edit (your own), Delete for me, Delete for everyone (your own).
+//
 // contacts = [{ id, name, photo, sub }]
 export default function Chat({ contacts }) {
   const { db, repo, user, syncState, syncNow } = useApp();
-  const [activeId, setActiveId] = usePersistentState(`sm_nav_chat_${user.id}`, () => (contacts.length === 1 ? contacts[0].id : null), (v) => v === null || contacts.some((c) => c.id === v));
+  const [activeId, setActiveId] = useState(null);
   const [query, setQuery] = useState('');
   const [text, setText] = useState('');
   const [limit, setLimit] = useState(50);
-  const [menuFor, setMenuFor] = useState(null); // the contact whose options are open
+  const [menuFor, setMenuFor] = useState(null); // the contact whose chat options are open
+  const [msgMenu, setMsgMenu] = useState(null); // the message whose options are open
+  const [editing, setEditing] = useState(null); // the message being edited
   const endRef = useRef(null);
   const messages = useMemo(() => visibleMessages(db, user.id), [db, user.id]);
   const prefs = chatPrefsOf(db, user.id);
@@ -45,7 +51,7 @@ export default function Chat({ contacts }) {
     endRef.current?.scrollIntoView({ block: 'end' });
   }, [thread.length, activeId]);
 
-  // Pin, mute and delete are personal: they only change what this person sees.
+  // Pin, mute and delete chat are personal: they only change what this person sees.
   const setPref = (id, patch) =>
     repo.update(roleCollection(user.role), user.id, { chatPrefs: { ...prefs, [id]: { ...prefs[id], ...patch } } });
 
@@ -55,7 +61,7 @@ export default function Chat({ contacts }) {
   }
 
   function deleteChat(c) {
-    if (!window.confirm(`Delete your conversation with ${c.name}? It is removed from your messages only. ${c.name} keeps their copy.`)) return;
+    if (!window.confirm(`Delete your chat with ${c.name}? This clears the messages from your side only. ${c.name} keeps their copy, and you can still message them.`)) return;
     setPref(c.id, { clearedAt: Date.now(), pinned: false });
     setMenuFor(null);
     if (activeId === c.id) setActiveId(null);
@@ -65,15 +71,45 @@ export default function Chat({ contacts }) {
     setActiveId(id);
     setLimit(50);
     setText('');
+    setEditing(null);
   }
 
   function send(e) {
     e.preventDefault();
     const body = text.trim();
     if (!body || !active) return;
+    if (editing) {
+      if (body !== editing.text) repo.update('messages', editing.id, { text: body, edited: true, editedAt: Date.now() });
+      setEditing(null);
+      setText('');
+      syncNow();
+      return;
+    }
     repo.add('messages', { thread: threadKey(user.id, active.id), from: user.id, to: active.id, text: body, at: Date.now(), read: false });
     setText('');
     syncNow(); // push it to the shared database right away
+  }
+
+  // ----- one message -----
+  function startEdit(m) {
+    setMsgMenu(null);
+    setEditing(m);
+    setText(m.text);
+  }
+
+  function deleteForMe(m) {
+    repo.update('messages', m.id, { deletedFor: [...(m.deletedFor || []), user.id] });
+    setMsgMenu(null);
+    if (editing?.id === m.id) { setEditing(null); setText(''); }
+    syncNow();
+  }
+
+  function deleteForEveryone(m) {
+    if (!window.confirm('Delete this message for everyone? Both of you will see that it was deleted.')) return;
+    repo.update('messages', m.id, { deleted: true, deletedAt: Date.now() });
+    setMsgMenu(null);
+    if (editing?.id === m.id) { setEditing(null); setText(''); }
+    syncNow();
   }
 
   // Messages only reach the other person when this device is connected to the shared database.
@@ -102,8 +138,24 @@ export default function Chat({ contacts }) {
         {messages.some((m) => m.from === menuFor.id && m.to === user.id && !m.read) && (
           <button className="wide" onClick={() => { markRead(menuFor.id); setMenuFor(null); }}>Mark as read</button>
         )}
-        <button className="danger-outline wide" onClick={() => deleteChat(menuFor)}>Delete conversation</button>
+        <button className="danger-outline wide" onClick={() => deleteChat(menuFor)}>Delete chat</button>
       </div>
+    </Modal>
+  );
+
+  const messageOptions = msgMenu && (
+    <Modal title="Message" onClose={() => setMsgMenu(null)}>
+      <p className="msg-preview">{msgMenu.deleted ? 'This message was deleted.' : msgMenu.text}</p>
+      <div className="manage-actions">
+        {msgMenu.from === user.id && !msgMenu.deleted && (
+          <button className="wide" onClick={() => startEdit(msgMenu)}>Edit message</button>
+        )}
+        <button className="wide" onClick={() => deleteForMe(msgMenu)}>Delete for me</button>
+        {msgMenu.from === user.id && !msgMenu.deleted && (
+          <button className="danger-outline wide" onClick={() => deleteForEveryone(msgMenu)}>Delete for everyone</button>
+        )}
+      </div>
+      <p className="hint">Delete for me removes it from your screen only. Delete for everyone removes it for both of you. The school administrator can still review conversations.</p>
     </Modal>
   );
 
@@ -133,15 +185,16 @@ export default function Chat({ contacts }) {
             <h4 className="mini-h">Recent chats</h4>
             <div className="chat-list">
               {recent.map(({ c, last }) => {
-                const n = messages.filter((m) => m.from === c.id && m.to === user.id && !m.read).length;
+                const n = messages.filter((m) => m.from === c.id && m.to === user.id && !m.read && !m.deleted).length;
                 const p = prefs[c.id] || {};
+                const preview = last.deleted ? 'This message was deleted' : last.text;
                 return (
                   <div className="chat-row" key={c.id}>
                     <button className="chat-contact" onClick={() => open(c.id)}>
                       <Avatar letter={initials({ firstName: c.name })} src={c.photo} size={42} />
                       <span className="chat-contact-text">
                         <b>{c.name}{p.pinned && <em className="chat-tag">Pinned</em>}{p.muted && <em className="chat-tag">Muted</em>}</b>
-                        <small>{`${last.from === user.id ? 'You: ' : ''}${last.text}`}</small>
+                        <small>{`${last.from === user.id ? 'You: ' : ''}${preview}`}</small>
                       </span>
                       {n > 0 && <span className={`chat-count ${p.muted ? 'muted' : ''}`}>{n}</span>}
                     </button>
@@ -194,6 +247,7 @@ export default function Chat({ contacts }) {
         <button className="icon-btn" onClick={() => setMenuFor(active)} aria-label="Chat options"><Icon name="more" size={20} /></button>
       </div>
       {options}
+      {messageOptions}
 
       {status}
       <div className="chat-msgs">
@@ -203,12 +257,22 @@ export default function Chat({ contacts }) {
           const day = dayLabel(m.at);
           const showDay = day !== lastDay;
           lastDay = day;
+          const mine = m.from === user.id;
           return (
             <React.Fragment key={m.id}>
               {showDay && <div className="chat-day">{day}</div>}
-              <div className={`bubble ${m.from === user.id ? 'me' : 'them'}`}>
-                <span>{m.text}</span>
-                <small>{clock(m.at)}{m.from === user.id ? (m.read ? ' · Seen' : ' · Sent') : ''}</small>
+              <div
+                className={`bubble ${mine ? 'me' : 'them'} ${m.deleted ? 'deleted' : ''} tappable`}
+                role="button" tabIndex={0} aria-label="Message options"
+                onClick={() => setMsgMenu(m)}
+                onKeyDown={(e) => { if (e.key === 'Enter') setMsgMenu(m); }}
+              >
+                {m.deleted ? <em>{mine ? 'You deleted this message' : 'This message was deleted'}</em> : <span>{m.text}</span>}
+                <small>
+                  {clock(m.at)}
+                  {m.edited && !m.deleted ? ' · Edited' : ''}
+                  {mine && !m.deleted ? (m.read ? ' · Seen' : ' · Sent') : ''}
+                </small>
               </div>
             </React.Fragment>
           );
@@ -216,9 +280,15 @@ export default function Chat({ contacts }) {
         <div ref={endRef} />
       </div>
 
+      {editing && (
+        <div className="chat-editbar">
+          <span>Editing message</span>
+          <button type="button" className="btn-sm" onClick={() => { setEditing(null); setText(''); }}>Cancel</button>
+        </div>
+      )}
       <form className="chat-input" onSubmit={send}>
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Type a message" maxLength={1000} />
-        <button type="submit" className="primary" disabled={!text.trim()}>Send</button>
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={editing ? 'Edit your message' : 'Type a message'} maxLength={1000} />
+        <button type="submit" className="primary" disabled={!text.trim()}>{editing ? 'Save' : 'Send'}</button>
       </form>
     </div>
   );
