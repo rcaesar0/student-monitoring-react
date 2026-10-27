@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import Icon from './Icon';
+import { Tr } from '../utils/i18n';
 
 export const Empty = ({ text }) => (
   <div className="empty">
-    <b>{text}</b>
+    <b><Tr>{text}</Tr></b>
   </div>
 );
 
@@ -11,14 +12,14 @@ export const Stat = ({ title, value, icon, tone = 'blue' }) => (
   <div className={`stat tone-${tone}`}>
     {icon && <div className="stat-icon"><Icon name={icon} size={22} /></div>}
     <strong>{value}</strong>
-    <span>{title}</span>
+    <span><Tr>{title}</Tr></span>
   </div>
 );
 
 export const Panel = ({ title, children, actions }) => (
   <section className="panel">
     <div className="panel-head">
-      <h3>{title}</h3>
+      <h3><Tr>{title}</Tr></h3>
       {actions}
     </div>
     {children}
@@ -47,7 +48,7 @@ export function Modal({ title, onClose, children }) {
     <div className="modal-backdrop" onMouseDown={onClose}>
       <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h3>{title}</h3>
+          <h3><Tr>{title}</Tr></h3>
           <button className="icon-btn" onClick={onClose} aria-label="Close"><Icon name="close" size={18} /></button>
         </div>
         {children}

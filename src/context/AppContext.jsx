@@ -2,7 +2,8 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState 
 import { loadDatabase, saveDatabase, withDefaults, loadSession, saveSession, clearSession } from '../services/storage';
 import { fetchRemote, sendInit, sendOp } from '../services/sync';
 import { roleCollection } from '../services/auth';
-import { uid } from '../utils/helpers';
+import { uid, fullName } from '../utils/helpers';
+import { describeChange } from '../utils/audit';
 
 const AppContext = createContext(null);
 const POLL_MS = 2000;
@@ -16,8 +17,8 @@ export function AppProvider({ children }) {
 
   const dbRef = useRef(db);
   dbRef.current = db;
-  // connected: reached the shared database at least once. version: last version received.
-  // outbox: our changes not yet confirmed by the server (kept and retried if the connection drops).
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
   const sync = useRef({ connected: false, version: 0, seq: 0, outbox: [], flushing: false });
   const trigger = useRef(() => {});
 
@@ -111,8 +112,9 @@ export function AppProvider({ children }) {
     };
   }, []);
 
-  // The data layer. Pages only call these four functions. Each one updates this screen at once
+    // The data layer. Pages only call these functions. Each one updates this screen at once
   // and queues the same change for the shared database so other devices get it.
+  // Important changes (accounts, links, grade releases, announcements) are also written to the Activity log.
   const repo = useMemo(() => {
     const push = (op) => {
       const s = sync.current;
@@ -122,24 +124,46 @@ export function AppProvider({ children }) {
       if (s.flush) s.flush().catch(() => {});
     };
 
+    // Called before the change is applied, so removed items can still be looked up by name.
+    const audit = (action, col, id, extra) => {
+      let text = null;
+      try { text = describeChange({ action, col, id, db: dbRef.current, ...extra }); } catch { text = null; }
+      if (!text) return;
+      const who = sessionRef.current;
+      const person = who ? (dbRef.current[roleCollection(who.role)] || []).find((x) => x.id === who.id) : null;
+      const entry = { at: Date.now(), role: who ? who.role : 'Guest', actorId: who ? who.id : '', actor: person ? (fullName(person).trim() || 'Administrator') : 'Guest', text };
+      const newId = uid();
+      setDb((d) => ({ ...d, audit: [...(d.audit || []), { ...entry, id: newId }] }));
+      push({ type: 'add', col: 'audit', id: newId, data: entry });
+    };
+
     return {
       add: (col, data, id) => {
         const newId = id || uid();
+        audit('add', col, newId, { data });
         setDb((d) => ({ ...d, [col]: [...(d[col] || []), { ...data, id: newId }] }));
         push({ type: 'add', col, id: newId, data });
         return newId;
       },
       set: (col, id, data) => {
+        audit('set', col, id, { data });
         setDb((d) => ({ ...d, [col]: [...(d[col] || []).filter((x) => x.id !== id), { ...data, id }] }));
         push({ type: 'set', col, id, data });
       },
       update: (col, id, patch) => {
+        audit('update', col, id, { patch });
         setDb((d) => ({ ...d, [col]: (d[col] || []).map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
         push({ type: 'update', col, id, patch });
       },
       remove: (col, id) => {
+        audit('remove', col, id, {});
         setDb((d) => ({ ...d, [col]: (d[col] || []).filter((x) => x.id !== id) }));
         push({ type: 'remove', col, id });
+      },
+      // Replaces everything with a backup file (Admin > Backup and restore).
+      replaceAll: (newDb) => {
+        setDb(withDefaults(newDb));
+        push({ type: 'replaceAll', db: newDb });
       },
     };
   }, []);

@@ -1,10 +1,20 @@
 import { approvedChildren, roomsOfStudent } from './selectors';
 import { fullName, formatDate, dateStr } from './helpers';
-import { isLive } from './meet';
+import { visibleSchoolPosts } from './schoolPosts';
+
+const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return dateStr(d); };
 
 // Builds the bell menu for each role. `unread` is what the red badge counts.
-// Guardians remember which posts they have already seen in user.seenPosts.
+// Guardians and teachers remember what they have already seen in user.seenPosts.
 export function notificationsFor(db, user) {
+  const seen = new Set(user.seenPosts || []);
+  const since = daysAgo(7);
+
+  // School-wide announcements from the administrator (teachers and guardians).
+  const school = visibleSchoolPosts(db, user.role)
+    .filter((p) => p.date >= since)
+    .map((p) => ({ id: `school-${p.id}`, at: p.date, title: p.title, sub: 'School announcement', view: user.role === 'Teacher' ? 'Dashboard' : 'My Children' }));
+
   if (user.role === 'Teacher') {
     const mine = new Set(db.rooms.filter((r) => r.teacherId === user.id && r.status === 'Active').map((r) => r.id));
     const pending = db.guardianLinks.filter((l) => l.status === 'Pending' && mine.has(l.roomId));
@@ -12,44 +22,33 @@ export function notificationsFor(db, user) {
       const x = db[col].find((y) => y.id === id);
       return x ? fullName(x) : 'Someone';
     };
-    return {
-      unread: pending.length,
-      items: pending.slice(0, 6).map((l) => ({
-        id: l.id,
-        title: 'New guardian request',
-        sub: `${nameOf('guardians', l.guardianId)} wants to view ${nameOf('students', l.studentId)}`,
-        view: 'Requests',
-        fresh: true,
-      })),
-      postIds: [],
-    };
+    const requests = pending.slice(0, 6).map((l) => ({
+      id: l.id,
+      title: 'New guardian request',
+      sub: `${nameOf('guardians', l.guardianId)} wants to view ${nameOf('students', l.studentId)}`,
+      view: 'Requests',
+      fresh: true,
+    }));
+    const notes = school.map(({ at, ...n }) => ({ ...n, fresh: !seen.has(n.id) }));
+    const items = [...requests, ...notes];
+    return { unread: items.filter((i) => i.fresh).length, items, postIds: school.map((n) => n.id) };
   }
 
   if (user.role === 'Admin') {
-    const pending = db.guardianLinks.filter((l) => l.status === 'Pending');
-    const n = pending.length;
-    const guardianName = (id) => { const g = db.guardians.find((x) => x.id === id); return g ? fullName(g) : 'A guardian'; };
-    const childName = (id) => { const s = db.students.find((x) => x.id === id); return s ? fullName(s) : 'a student'; };
+    const n = db.guardianLinks.filter((l) => l.status === 'Pending').length;
     return {
       unread: n,
-      items: pending.slice(0, 6).map((l) => ({
-        id: l.id,
-        title: 'Guardian link request',
-        sub: `${guardianName(l.guardianId)} for ${childName(l.studentId)}`,
-        view: 'Guardians',
-        fresh: true,
-      })),
+      items: n ? [{ id: 'req', title: `${n} guardian link request${n > 1 ? 's' : ''} pending`, sub: 'Waiting for approval', view: 'Guardians', fresh: true }] : [],
       postIds: [],
     };
   }
 
-  // Guardian: new posts, attendance alerts, grades released, live classes, link approvals, and other guardians linking to the same child (last 7 days).
+  // Guardian: new posts, attendance alerts (absent / late / excused, last 7 days), grades released (last 7 days),
+  // early-warning alerts the teacher sent (last 14 days, until resolved) and school announcements.
   const kids = approvedChildren(db, user.id);
   const kidById = new Map(kids.map((c) => [c.id, c]));
   const rooms = new Map(kids.flatMap((c) => roomsOfStudent(db, c.id)).map((r) => [r.id, r]));
   const roomName = (id) => db.rooms.find((r) => r.id === id)?.name || '';
-  const seen = new Set(user.seenPosts || []);
-  const since = (() => { const d = new Date(); d.setDate(d.getDate() - 7); return dateStr(d); })();
 
   const posts = [
     ...db.announcements.map((x) => ({ ...x, kind: 'Announcement' })),
@@ -73,40 +72,20 @@ export function notificationsFor(db, user) {
       sub: `${rooms.get(a.roomId).subject} · ${roomName(a.roomId)}`, view: 'Grades', roomId: a.roomId,
     }));
 
-  // A teacher shared a Google Meet link for one of the rooms.
-  const meets = [...rooms.values()]
-    .filter(isLive)
-    .map((r) => ({
-      id: `meet-${r.id}-${r.meet.at}`, at: dateStr(new Date(r.meet.at)),
-      title: `${r.subject}: class on Google Meet is live`,
-      sub: `${r.name} · open your home page to join`, view: 'My Children', roomId: null,
+  // The message from the teacher is in Updates, where the guardian can press "I've seen this".
+  const alerts = (db.alerts || [])
+    .filter((a) => kidById.has(a.studentId) && rooms.has(a.roomId) && a.date >= daysAgo(14) && (a.status || 'Notified') !== 'Resolved')
+    .map((a) => ({
+      id: `alert-${a.id}`, at: a.date,
+      title: `${kidById.get(a.studentId).firstName} may need extra help`,
+      sub: `${rooms.get(a.roomId).subject} · Message from the teacher`,
+      view: 'Updates', roomId: a.roomId,
     }));
 
-  // Your own request was approved.
-  const approvals = db.guardianLinks
-    .filter((l) => l.guardianId === user.id && l.status === 'Approved' && (l.approvedAt || '') >= since && kidById.has(l.studentId))
-    .map((l) => ({
-      id: `approved-${l.id}`, at: l.approvedAt,
-      title: `${kidById.get(l.studentId).firstName} is now linked to your account`,
-      sub: 'The school office approved your request', view: 'My Children', roomId: null,
-    }));
-
-  // Another guardian was approved for a child you are linked to.
-  const newLinks = db.guardianLinks
-    .filter((l) => l.status === 'Approved' && l.guardianId !== user.id && kidById.has(l.studentId) && (l.approvedAt || l.createdAt || '') >= since)
-    .map((l) => {
-      const g = db.guardians.find((x) => x.id === l.guardianId);
-      return {
-        id: `link-${l.id}`, at: l.approvedAt || l.createdAt,
-        title: `${g ? fullName(g) : 'Another guardian'} was linked to ${kidById.get(l.studentId).firstName}`,
-        sub: 'If this is not expected, tell the school office', view: 'My Children', roomId: null,
-      };
-    });
-
-  const all = [...posts, ...attendance, ...grades, ...meets, ...approvals, ...newLinks].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 12);
+  const all = [...posts, ...attendance, ...grades, ...alerts, ...school].sort((a, b) => b.at.localeCompare(a.at)).slice(0, 14);
   const pending = db.guardianLinks.filter((l) => l.guardianId === user.id && l.status === 'Pending').length;
   const items = [
-    ...(pending ? [{ id: 'pending', title: 'Waiting for approval', sub: `${pending} request${pending > 1 ? 's' : ''} sent to the school office`, view: 'My Children', fresh: false }] : []),
+    ...(pending ? [{ id: 'pending', title: 'Waiting for approval', sub: `${pending} request${pending > 1 ? 's' : ''} sent`, view: 'My Children', fresh: false }] : []),
     ...all.map(({ at, ...n }) => ({ ...n, fresh: !seen.has(n.id) })),
   ];
   return { unread: items.filter((i) => i.fresh).length, items, postIds: all.map((n) => n.id) };

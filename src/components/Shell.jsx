@@ -10,6 +10,11 @@ import ChangePasswordModal from './ChangePasswordModal';
 import NotificationSettings from './NotificationSettings';
 import { useAutoArchive } from '../utils/autoArchive';
 import { showPhone } from '../utils/phone';
+import { roleCollection } from '../services/auth';
+import { useIdleLogout } from '../utils/idleLogout';
+import { useLang } from '../utils/i18n';
+import Flag from './Flag';
+import ErrorBoundary from './ErrorBoundary';
 
 const NAV_ICON = {
   Dashboard: 'home', Students: 'students', Sections: 'sections', Teachers: 'teachers', Guardians: 'guardians',
@@ -38,16 +43,17 @@ function useDismiss(open, setOpen) {
 
 function NotificationMenu({ user, setView }) {
   const { db, repo } = useApp();
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const ref = useDismiss(open, setOpen);
   const { items, unread, postIds } = notificationsFor(db, user);
 
-  // Guardians: mark posts as seen once the menu is closed, so "new" labels stay visible while open.
+  // Guardians and teachers: mark items as seen once the menu is closed, so "new" labels stay visible while open.
   const wasOpen = useRef(false);
   useEffect(() => {
-    if (wasOpen.current && !open && user.role === 'Guardian' && postIds.length) {
-      const merged = [...new Set([...(user.seenPosts || []), ...postIds])].slice(-100);
-      if (merged.length !== (user.seenPosts || []).length) repo.update('guardians', user.id, { seenPosts: merged });
+    if (wasOpen.current && !open && ['Guardian', 'Teacher'].includes(user.role) && postIds.length) {
+      const merged = [...new Set([...(user.seenPosts || []), ...postIds])].slice(-200);
+      if (merged.length !== (user.seenPosts || []).length) repo.update(roleCollection(user.role), user.id, { seenPosts: merged });
     }
     wasOpen.current = open;
   });
@@ -60,7 +66,7 @@ function NotificationMenu({ user, setView }) {
       </button>
       {open && (
         <div className="dropdown notif">
-          <div className="dropdown-head"><b>Notifications</b></div>
+          <div className="dropdown-head"><b>{t('Notifications')}</b></div>
           {items.length ? (
             items.map((n) => (
               <button key={n.id} className={`dropdown-item notif-item ${n.fresh ? 'fresh' : ''}`} onClick={() => { setView(n.view, n.roomId); setOpen(false); }}>
@@ -69,11 +75,21 @@ function NotificationMenu({ user, setView }) {
               </button>
             ))
           ) : (
-            <div className="dropdown-empty">You’re all caught up.</div>
+            <div className="dropdown-empty">{t('You’re all caught up.')}</div>
           )}
         </div>
       )}
     </div>
+  );
+}
+
+// Language switch beside the chat button: shows the current flag, tap to switch Filipino / English.
+function LangButton() {
+  const { lang, setLang } = useLang();
+  return (
+    <button className="lang-chip" onClick={() => setLang(lang === 'fil' ? 'en' : 'fil')} aria-label={lang === 'fil' ? 'Switch to English' : 'Lumipat sa Filipino'}>
+      <Flag lang={lang} width={22} /><span>{lang === 'fil' ? 'FIL' : 'EN'}</span>
+    </button>
   );
 }
 
@@ -90,6 +106,7 @@ function ChatButton({ user, setView }) {
 }
 
 function ProfileMenu({ user, logout, theme, toggleTheme, setView, menuItems = [] }) {
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -123,27 +140,27 @@ function ProfileMenu({ user, logout, theme, toggleTheme, setView, menuItems = []
           </div>
           <div className="dropdown-sep" />
           <button className="dropdown-item" onClick={go(() => setView('Profile'))}>
-            <Icon name="edit" size={18} /><span>Edit profile</span>
+            <Icon name="edit" size={18} /><span>{t('Edit profile')}</span>
           </button>
           <button className="dropdown-item" onClick={go(() => setPwOpen(true))}>
-            <Icon name="key" size={18} /><span>Change password</span>
+            <Icon name="key" size={18} /><span>{t('Change password')}</span>
           </button>
           <button className="dropdown-item" onClick={go(() => setNotifOpen(true))}>
-            <Icon name="bell" size={18} /><span>Notifications</span>
+            <Icon name="bell" size={18} /><span>{t('Notifications')}</span>
           </button>
           {menuItems.map((m) => (
             <button key={m.label} className="dropdown-item" onClick={go(m.onClick)}>
-              <Icon name={m.icon} size={18} /><span>{m.label}</span>
+              <Icon name={m.icon} size={18} /><span>{t(m.label)}</span>
             </button>
           ))}
           <button className="dropdown-item" onClick={toggleTheme}>
             <Icon name={theme === 'light' ? 'moon' : 'sun'} size={18} />
-            <span>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
+            <span>{theme === 'light' ? t('Dark mode') : t('Light mode')}</span>
             <span className={`switch ${theme === 'dark' ? 'on' : ''}`} aria-hidden="true"><i /></span>
           </button>
           <div className="dropdown-sep" />
           <button className="dropdown-item danger" onClick={go(logout)}>
-            <Icon name="logout" size={18} /><span>Sign out</span>
+            <Icon name="logout" size={18} /><span>{t('Sign out')}</span>
           </button>
         </div>
       )}
@@ -157,6 +174,8 @@ function ProfileMenu({ user, logout, theme, toggleTheme, setView, menuItems = []
 // title: overrides the heading (defaults to the view name). onBack: shows a back arrow.
 // An empty nav hides the bottom bar.
 export default function Shell({ children, user, logout, theme, toggleTheme, nav, view, setView, badges = {}, menuItems = [], title, onBack }) {
+  const { t } = useLang();
+  useIdleLogout(); // signed out after a while without activity
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -167,19 +186,20 @@ export default function Shell({ children, user, logout, theme, toggleTheme, nav,
             <img className="topbar-logo" src="/logo-app.png" alt="Logo" />
           )}
           <div>
-            <small>{user.role} portal</small>
-            <h1>{title || view}</h1>
+            <small>{t(`${user.role} portal`)}</small>
+            <h1>{t(title || view)}</h1>
           </div>
         </div>
         <div className="topbar-right">
-          {user.role !== 'Admin' && <ChatButton user={user} setView={setView} />}
+          <LangButton />
+           {user.role !== 'Admin' && <ChatButton user={user} setView={setView} />}
           <NotificationMenu user={user} setView={setView} />
           <ProfileMenu {...{ user, logout, theme, toggleTheme, setView, menuItems }} />
         </div>
       </header>
 
       <main className="main">
-        <div className="content" key={`${view}-${title || ''}`}>{children}</div>
+                <div className="content" key={`${view}-${title || ''}`}><ErrorBoundary>{children}</ErrorBoundary></div>
       </main>
 
       {nav.length > 0 && (
@@ -190,7 +210,7 @@ export default function Shell({ children, user, logout, theme, toggleTheme, nav,
                 <Icon name={NAV_ICON[n] || 'home'} size={22} />
                 {badges[n] ? <span className="nav-dot" aria-label="Needs attention" /> : null}
               </span>
-              <span className="dock-label">{n}</span>
+              <span className="dock-label">{t(n)}</span>
             </button>
           ))}
         </nav>

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Panel, Empty, Modal, Badge } from '../../components/UI';
 import Icon from '../../components/Icon';
+import DateField from '../../components/DateField';
+import { confirmDialog } from '../../utils/dialog';
 import { useApp } from '../../context/AppContext';
 import { fullName, dateStr, formatDate } from '../../utils/helpers';
 import { rosterOf } from '../../utils/selectors';
@@ -39,10 +41,10 @@ export default function GradesTab({ room }) {
   const everythingReleased = all.length > 0 && all.every((a) => a.released);
 
   // Releasing is per assessment: guardians see the scores of released assessments only.
-  function releaseEveryone() {
+  async function releaseEveryone() {
     const pending = all.filter((a) => !a.released);
     if (!pending.length) return;
-    if (!window.confirm(`Release ${pending.length} assessment${pending.length > 1 ? 's' : ''} to the guardians of all students?`)) return;
+    if (!(await confirmDialog({ title: `Release ${pending.length} assessment${pending.length > 1 ? 's' : ''}?`, message: 'The scores will be visible to the guardians of all students.', confirmText: 'Release' }))) return;
     pending.forEach((a) => repo.update('assessments', a.id, { released: true, releasedAt: dateStr() }));
   }
 
@@ -62,8 +64,8 @@ export default function GradesTab({ room }) {
     repo.set('grades', id, { assessmentId: a.id, studentId: s.id, roomId: room.id, score });
   }
 
-  function removeAssessment(a) {
-    if (!window.confirm(`Delete "${a.title}" and all its scores?`)) return;
+  async function removeAssessment(a) {
+    if (!(await confirmDialog({ title: `Delete “${a.title}”?`, message: 'All of its scores are deleted too.', confirmText: 'Delete', tone: 'danger' }))) return;
     db.grades.filter((g) => g.assessmentId === a.id).forEach((g) => repo.remove('grades', g.id));
     releases.filter((r) => r.assessmentId === a.id).forEach((r) => repo.remove('releases', r.id));
     repo.remove('assessments', a.id);
@@ -149,11 +151,7 @@ export default function GradesTab({ room }) {
             <div className="assess-meta">
               <label className="assess-date">
                 <small>Date conducted</small>
-                <input
-                  type="date"
-                  value={conductedOf(picked)}
-                  onChange={(e) => e.target.value && repo.update('assessments', picked.id, { conductedDate: e.target.value })}
-                />
+                <DateField required value={conductedOf(picked)} onChange={(e) => repo.update('assessments', picked.id, { conductedDate: e.target.value })} />
               </label>
               <span className={`status-pill ${picked.released ? 'on' : ''}`}>{statusText(picked)}</span>
               <button className="icon-btn" onClick={() => setManaging(picked)} aria-label={`Options for ${picked.title}`}>
@@ -198,12 +196,7 @@ export default function GradesTab({ room }) {
                       </div>
                       <label className="assess-date">
                         <small>Date conducted</small>
-                        <input
-                          type="date"
-                          value={conductedOf(a)}
-                          onChange={(e) => e.target.value && repo.update('assessments', a.id, { conductedDate: e.target.value })}
-                          aria-label={`Date conducted for ${a.title}`}
-                        />
+                        <DateField required value={conductedOf(a)} onChange={(e) => repo.update('assessments', a.id, { conductedDate: e.target.value })} aria-label={`Date conducted for ${a.title}`} />
                       </label>
                       <span className={`status-pill ${a.released ? 'on' : ''}`}>{statusText(a)}</span>
                     </th>
@@ -323,8 +316,7 @@ function AssessmentModal({ initial, defaultQuarter, onClose, onSave }) {
         <div className="grid2">
           <label>
             Date conducted
-            <input type="date" value={f.conductedDate} onChange={(e) => setF({ ...f, conductedDate: e.target.value })} />
-          </label>
+            <DateField required value={f.conductedDate} onChange={(e) => setF({ ...f, conductedDate: e.target.value })} />          </label>
           <label>
             Quarter
             <select value={f.quarter} onChange={(e) => setF({ ...f, quarter: e.target.value })}>

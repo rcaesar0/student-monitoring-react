@@ -1,57 +1,148 @@
-import { normalizeGrade } from './helpers';
 
-// Reads CSV text properly: quoted values, commas inside quotes, and a leading BOM from Excel.
-export function parseCsv(text) {
-  const s = String(text || '').replace(/^\ufeff/, '');
-  const rows = [];
-  let row = [];
-  let cell = '';
-  let quoted = false;
-  for (let i = 0; i < s.length; i += 1) {
-    const ch = s[i];
-    if (quoted) {
-      if (ch === '"') {
-        if (s[i + 1] === '"') { cell += '"'; i += 1; } else quoted = false;
-      } else cell += ch;
-    } else if (ch === '"') quoted = true;
-    else if (ch === ',') { row.push(cell); cell = ''; }
-    else if (ch === '\n' || ch === '\r') {
-      if (ch === '\r' && s[i + 1] === '\n') i += 1;
-      row.push(cell); rows.push(row); row = []; cell = '';
-    } else cell += ch;
+const cell = (value) => {
+  let text =
+    value === null || value === undefined ? '' : String(value);
+
+  // Prevent spreadsheet formula injection.
+  if (/^[=+\-@\t\r]/.test(text) && !/^-?\d+(\.\d+)?$/.test(text)) {
+    text = `'${text}`;
   }
-  row.push(cell);
-  rows.push(row);
-  return rows.map((r) => r.map((c) => c.trim())).filter((r) => r.some((c) => c !== ''));
+
+  // Escape CSV values containing commas, quotes, or line breaks.
+  return /[",\n\r]/.test(text)
+    ? `"${text.replace(/"/g, '""')}"`
+    : text;
+};
+
+export function downloadCsv(filename, rows) {
+  const content =
+    '\ufeff' +
+    rows.map((row) => row.map(cell).join(',')).join('\r\n');
+
+  downloadBlob(
+    filename,
+    new Blob([content], { type: 'text/csv;charset=utf-8' })
+  );
 }
 
-// Columns: firstName, middleName, lastName, lrn, birthdate, grade (header row required).
+export function downloadJson(filename, data) {
+  downloadBlob(
+    filename,
+    new Blob([JSON.stringify(data)], {
+      type: 'application/json;charset=utf-8',
+    })
+  );
+}
+
+// Download a blank student CSV template.
+export function downloadStudentTemplate() {
+  downloadCsv('student-template.csv', [
+    ['firstName', 'middleName', 'lastName', 'lrn', 'birthdate', 'grade'],
+    ['', '', '', '', '', ''],
+  ]);
+}
+
+// Parse CSV text into student objects.
 export function parseStudents(text) {
-  const rows = parseCsv(text);
+  if (!text || !text.trim()) return [];
+
+  const input = text.replace(/^\uFEFF/, '');
+  const rows = [];
+
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+
+    if (char === '"') {
+      if (inQuotes && input[i + 1] === '"') {
+        field += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      row.push(field.trim());
+      field = '';
+    } else if ((char === '\n' || char === '\r') && !inQuotes) {
+      // Handle Windows, Unix, and old Mac line endings.
+      if (char === '\r' && input[i + 1] === '\n') {
+        i++;
+      }
+
+      row.push(field.trim());
+
+      if (row.some((value) => value !== '')) {
+        rows.push(row);
+      }
+
+      row = [];
+      field = '';
+    } else {
+      field += char;
+    }
+  }
+
+  // Include the final row when the file has no trailing newline.
+  row.push(field.trim());
+
+  if (row.some((value) => value !== '')) {
+    rows.push(row);
+  }
+
   if (rows.length < 2) return [];
-  const head = rows[0].map((h) => h.toLowerCase().replace(/[\s_]/g, ''));
-  return rows.slice(1).map((cells) => {
-    const r = {};
-    head.forEach((h, i) => { r[h] = cells[i] || ''; });
+
+  const headers = rows[0].map((header) =>
+    header.trim().toLowerCase()
+  );
+
+  const required = [
+    'firstname',
+    'lastname',
+    'lrn',
+    'birthdate',
+    'grade',
+  ];
+
+  // Reject files that do not contain the required column names.
+  if (!required.every((header) => headers.includes(header))) {
+    return [];
+  }
+
+  return rows.slice(1).map((values) => {
+    const record = {};
+
+    headers.forEach((header, index) => {
+      record[header] = values[index] ?? '';
+    });
+
+    const gradeValue = (record.grade || '').trim();
+    const gradeNumber = gradeValue.match(/\d+/)?.[0];
+
     return {
-      firstName: r.firstname || '', middleName: r.middlename || '', lastName: r.lastname || '',
-      lrn: r.lrn || '', birthdate: r.birthdate || '', grade: normalizeGrade(r.grade || r.gradelevel),
+      firstName: record.firstname || '',
+      middleName: record.middlename || '',
+      lastName: record.lastname || '',
+      lrn: record.lrn || '',
+      birthdate: record.birthdate || '',
+      grade: gradeNumber ? `Grade ${gradeNumber}` : gradeValue,
     };
   });
 }
 
-export function downloadStudentTemplate() {
-  const csv = [
-    'firstName,middleName,lastName,lrn,birthdate,grade',
-    'Juan,Santos,Dela Cruz,300000000001,2014-04-21,Grade 6',
-    'Maria,,Reyes,300000000002,2015-01-09,Grade 5',
-  ].join('\r\n');
-  const url = URL.createObjectURL(new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'students_template.csv';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+function downloadBlob(filename, blob) {
+  const url = URL.createObjectURL(blob);
+
+  const link = Object.assign(document.createElement('a'), {
+    href: url,
+    download: filename,
+  });
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

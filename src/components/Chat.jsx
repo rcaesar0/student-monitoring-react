@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext';
 import { threadKey, chatPrefsOf, visibleMessages } from '../utils/chat';
 import { roleCollection } from '../services/auth';
 import { initials } from '../utils/helpers';
+import { confirmDialog } from '../utils/dialog';
 
 const clock = (t) => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 const dayLabel = (t) => new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -60,11 +61,18 @@ export default function Chat({ contacts }) {
     messages.filter((m) => m.thread === key && m.to === user.id && !m.read).forEach((m) => repo.update('messages', m.id, { read: true }));
   }
 
-  function deleteChat(c) {
-    if (!window.confirm(`Delete your chat with ${c.name}? This clears the messages from your side only. ${c.name} keeps their copy, and you can still message them.`)) return;
-    setPref(c.id, { clearedAt: Date.now(), pinned: false });
+  async function deleteChat(c) {
+    if (!(await confirmDialog({ title: `Delete your chat with ${c.name}?`, message: `This clears the messages from your side only. ${c.name} keeps their copy, and you can still message them.`, confirmText: 'Delete chat', tone: 'danger' }))) return;
+    const key = threadKey(user.id, c.id);
+    messages.filter((m) => m.thread === key).forEach((m) => {
+      const deletedFor = m.deletedFor || [];
+      if (!deletedFor.includes(user.id)) {
+        repo.update('messages', m.id, { deletedFor: [...deletedFor, user.id] });
+      }
+    });
     setMenuFor(null);
-    if (activeId === c.id) setActiveId(null);
+    setActiveId(null);
+    syncNow();
   }
 
   function open(id) {

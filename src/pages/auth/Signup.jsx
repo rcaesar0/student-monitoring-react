@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import PhoneField from '../../components/PhoneField';
-import ContactField from '../../components/ContactField';
 import VerifyCode from '../../components/VerifyCode';
 import TermsModal, { TERMS_VERSION } from '../../components/TermsModal';
 import { emailTaken, phoneTaken } from '../../services/auth';
@@ -11,9 +10,21 @@ import { MIN_PASSWORD_LENGTH } from '../../config';
 const STEPS = ['About you', 'Contact & address', 'Password', 'Verify'];
 const RELATIONS = ['Mother', 'Father', 'Grandmother', 'Grandfather', 'Aunt', 'Uncle', 'Sibling', 'Legal guardian', 'Other'];
 const EMPTY = {
-  firstName: '', middleName: '', lastName: '', relationship: '', relationshipOther: '', occupation: '',
-  contact: '', street: '', barangay: '', city: '', province: '',
-  emName: '', emPhone: '', password: '', confirm: '',
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  relationship: '',
+  relationshipOther: '',
+  occupation: '',
+  contact: '',
+  street: '',
+  barangay: '',
+  city: '',
+  province: '',
+  emName: '',
+  emPhone: '',
+  password: '',
+  confirm: '',
 };
 
 const BAD_CONTACT = 'Please enter a valid mobile number or email address.';
@@ -45,15 +56,21 @@ export default function Signup({ go }) {
       if (!f.relationship) return 'Please choose how you are related to the child.';
       if (f.relationship === 'Other' && !f.relationshipOther.trim()) return 'Please specify how you are related to the child.';
     }
-    if (s === 1) {
-      const { phone, email } = parseContact(f.contact);
-      if (!email && !phone) return BAD_CONTACT;
-      if (email && !/^\S+@\S+\.\S+$/.test(email)) return BAD_CONTACT;
-      if (phone && phoneTaken(db, phone)) return 'That mobile number is already registered.';
-      if (email && emailTaken(db, email)) return 'That email is already registered.';
-      if (!f.street.trim() || !f.barangay.trim() || !f.city.trim() || !f.province.trim()) return 'Please complete your address.';
-      if (f.emPhone && !boxToPhone(f.emPhone)) return BAD_CONTACT;
+
+          if (s === 1) {
+      const raw = f.contact.trim();
+      if (!raw) return BAD_CONTACT;
+      if (raw.includes('@')) {
+        const email = raw.toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return BAD_CONTACT;
+        if (emailTaken(db, email)) return 'That email is already registered.';
+      } else {
+        const phone = parsePhone(raw);
+        if (!phone) return BAD_CONTACT;
+        if (phoneTaken(db, phone)) return 'That mobile number is already registered.';
+      }
     }
+
     if (s === 2) {
       if (f.password.length < MIN_PASSWORD_LENGTH) return `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
       if (f.password !== f.confirm) return 'Passwords do not match.';
@@ -70,32 +87,68 @@ export default function Signup({ go }) {
     setStep(step + 1);
   }
 
+  function back() {
+    setError('');
+    setStep(step - 1);
+  }
+
   function createAccount(via) {
+    console.log('createAccount called:', via);
+
     const bad = [0, 1, 2].map(problem).find(Boolean);
-    if (bad) { setStep(0); return setError(bad); }
-    const { phone, email } = parseContact(f.contact);
+
+    if (bad) {
+      console.log('Signup validation failed:', bad);
+      setStep(0);
+      return setError(bad);
+    }
+
+    console.log('[SIGNUP] Validation passed');
+
+      const parsed = parseContact(f.contact);
+      const phone = parsed.phone;
+      const email = parsed.email.toLowerCase();
+
     repo.add('guardians', {
-      firstName: f.firstName.trim(), middleName: f.middleName.trim(), lastName: f.lastName.trim(),
-      relationship: f.relationship, relationshipOther: f.relationship === 'Other' ? f.relationshipOther.trim() : '',
+      firstName: f.firstName.trim(),
+      middleName: f.middleName.trim(),
+      lastName: f.lastName.trim(),
+      relationship: f.relationship,
+      relationshipOther: f.relationship === 'Other'
+        ? f.relationshipOther.trim()
+        : '',
       occupation: f.occupation.trim(),
-      phone, email,
-      street: f.street.trim(), barangay: f.barangay.trim(), city: f.city.trim(), province: f.province.trim(),
-      emName: f.emName.trim(), emPhone: boxToPhone(f.emPhone),
+      phone,
+      email,
+      street: f.street.trim(),
+      barangay: f.barangay.trim(),
+      city: f.city.trim(),
+      province: f.province.trim(),
+      emName: f.emName.trim(),
+      emPhone: boxToPhone(f.emPhone),
       verifiedVia: via.type,
-      termsAcceptedAt: new Date().toISOString(), termsVersion: TERMS_VERSION,
-      password: f.password, mustChangePassword: false,
-      status: 'Active', failedLinks: 0, lockedUntil: 0,
+      termsAcceptedAt: new Date().toISOString(),
+      termsVersion: TERMS_VERSION,
+      password: f.password,
+      mustChangePassword: false,
+      status: 'Active',
+      failedLinks: 0,
+      lockedUntil: 0,
     });
+
+    try {
+      sessionStorage.setItem('signup-success', email || phone);
+    } catch { /* ignore */ }
     go('login');
   }
 
-  const back = () => { setError(''); setStep(step - 1); };
+    const parsed = parseContact(f.contact);
 
-  const contact = parseContact(f.contact);
-  const channels = [
-    contact.phone && { type: 'phone', value: contact.phone, label: 'Mobile number' },
-    contact.email && { type: 'email', value: contact.email, label: 'Email' },
-  ].filter(Boolean);
+  const channels = parsed.phone
+    ? [{ type: 'phone', value: parsed.phone, label: 'SMS to mobile number' }]
+    : parsed.email
+      ? [{ type: 'email', value: parsed.email.toLowerCase(), label: 'Email' }]
+      : [];
 
   const header = (
     <>
@@ -149,27 +202,26 @@ export default function Signup({ go }) {
         </>
       )}
 
+      
       {step === 1 && (
         <>
           <h4 className="form-section">Contact</h4>
-          <ContactField value={f.contact} onChange={(contact) => setF({ ...f, contact })} />
-          <p className="hint">You can sign in with it, and we send your verification code there. You can add the other one later in your profile.</p>
-
-          <h4 className="form-section">Home address</h4>
-          <label>House no., street<input value={f.street} onChange={set('street')} autoComplete="address-line1" /></label>
-          <div className="grid2">
-            <label>Barangay<input value={f.barangay} onChange={set('barangay')} /></label>
-            <label>City or municipality<input value={f.city} onChange={set('city')} autoComplete="address-level2" /></label>
-          </div>
-          <label>Province<input value={f.province} onChange={set('province')} autoComplete="address-level1" /></label>
-
-          <h4 className="form-section">Emergency contact (optional)</h4>
-          <div className="grid2">
-            <label>Name<input value={f.emName} onChange={set('emName')} /></label>
-            <PhoneField label="Mobile number" value={f.emPhone} onChange={(emPhone) => setF({ ...f, emPhone })} />
-          </div>
+          <label>
+            Mobile number or email address
+            <input
+              type="text"
+              value={f.contact}
+              onChange={set('contact')}
+              autoComplete="username"
+              placeholder="09XXXXXXXXX or you@example.com"
+            />
+          </label>
+          <p className="hint">
+            Please enter a valid personal Contact to receive a verification code. This will be used to sign in to your account.
+          </p>
         </>
       )}
+
 
       {step === 2 && (
         <>

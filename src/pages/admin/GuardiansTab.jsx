@@ -19,7 +19,7 @@ export default function GuardiansTab() {
 
   function reset(g) {
     const password = makeTempPassword();
-    repo.update('guardians', g.id, { password, mustChangePassword: true, failedLinks: 0, lockedUntil: 0 });
+    repo.update('teachers', t.id, { password, mustChangePassword: true, failedLogins: 0, lockedLoginUntil: 0 });
     setCreds({
       title: 'Password reset',
       lines: [['Sign-in', signIn(g)], ['Temporary password', password]],

@@ -1,6 +1,12 @@
-node_modules
-dist
+
+node_modules/
+dist/
+
+# Environment variables and secrets
 .env
-.env.local
+.env.*
+!.env.example
+
+# Other files
 .DS_Store
 *.log

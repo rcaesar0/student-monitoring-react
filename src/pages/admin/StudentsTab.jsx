@@ -1,12 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { Panel, Empty, Modal, Avatar, Badge } from '../../components/UI';
+import DateField from '../../components/DateField';
 import { useApp } from '../../context/AppContext';
-import { fullName, initials, formatDate } from '../../utils/helpers';
+import { fullName, initials, formatDate, dateStr } from '../../utils/helpers';
 import { byName } from '../../utils/selectors';
 import { parseStudents, downloadStudentTemplate } from '../../utils/csv';
 import { sectionsOf, enrollInSection } from '../../utils/sections';
 import { uniqueLinkCode, makeLinkCode, showCode } from '../../utils/linkCodes';
 import { printSlips } from '../../utils/slips';
+import { confirmDialog } from '../../utils/dialog';
 import { GRADE_LEVELS } from '../../config';
 
 const EMPTY = { firstName: '', middleName: '', lastName: '', lrn: '', birthdate: '', grade: '', sectionKey: '' };
@@ -37,8 +39,13 @@ export default function StudentsTab() {
   // Section names the student is enrolled in.
   const sectionNames = (id) => sections.filter((sec) => sec.rooms.some((r) => db.roomStudents.some((x) => x.id === `${r.id}_${id}`))).map((sec) => sec.name);
 
-  function resetCode(s) {
-    if (!window.confirm(`Make a new link code for ${fullName(s)}? The old code will stop working.`)) return;
+  async function resetCode(s) {
+    const ok = await confirmDialog({
+      title: `Make a new link code for ${fullName(s)}?`,
+      message: 'The old code will stop working.',
+      confirmText: 'Make new code', tone: 'danger',
+    });
+    if (!ok) return;
     repo.update('students', s.id, { linkCode: uniqueLinkCode(db) });
   }
 
@@ -153,7 +160,7 @@ function DeskModal({ sections, onClose }) {
           <label>First name<input autoFocus value={f.firstName} onChange={set('firstName')} /></label>
           <label>Last name<input value={f.lastName} onChange={set('lastName')} /></label>
           <label>Middle name (optional)<input value={f.middleName} onChange={set('middleName')} /></label>
-          <label>Birthdate<input type="date" value={f.birthdate} onChange={set('birthdate')} /></label>
+          <label>Birthdate<DateField max={dateStr()} value={f.birthdate} onChange={set('birthdate')} /></label>
           <label>LRN (12 digits)<input value={f.lrn} onChange={(e) => setF({ ...f, lrn: e.target.value.replace(/\D/g, '').slice(0, 12) })} inputMode="numeric" /></label>
           <label>
             Grade level

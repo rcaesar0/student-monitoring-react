@@ -27,7 +27,7 @@ export const saveDatabase = (db) => {
   } catch {
     if (!warned) {
       warned = true;
-      window.alert('Browser storage is full, so your latest changes may not be saved on this device. Remove some attachments or old posts.');
+            window.dispatchEvent(new CustomEvent('app-notice', { detail: { title: 'Storage is full', message: 'Your latest changes may not be saved on this device. Remove some attachments or old posts.' } }));
     }
   }
 };

@@ -3,6 +3,7 @@ import { Panel, Empty, Badge, Avatar } from '../../components/UI';
 import { useApp } from '../../context/AppContext';
 import { fullName, initials, dateStr } from '../../utils/helpers';
 import { rosterOf } from '../../utils/selectors';
+import DateField from '../../components/DateField';
 
 const STATUSES = ['Present', 'Late', 'Absent', 'Excused'];
 
@@ -26,7 +27,7 @@ export default function AttendanceTab({ room }) {
   return (
     <Panel title="Attendance" actions={<button className="btn-sm" onClick={markRest}>Mark the rest present</button>}>
       <div className="toolbar">
-        <input type="date" value={date} max={dateStr()} onChange={(e) => setDate(e.target.value || dateStr())} />
+        <DateField required value={date} max={dateStr()} onChange={(e) => setDate(e.target.value || dateStr())} />
       </div>
       {students.length ? (
         <>

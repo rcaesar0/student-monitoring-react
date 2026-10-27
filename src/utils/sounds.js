@@ -1,5 +1,6 @@
 // Notification sounds made with the browser's own audio, so no sound files are needed.
 let ctx = null;
+let unlocked = false; // true once the person has tapped or typed on the page
 
 const getCtx = () => {
   if (!ctx) {
@@ -11,7 +12,9 @@ const getCtx = () => {
 };
 
 // Browsers only allow sound after the person has tapped or typed on the page once.
+// Until then nothing is created, so the browser does not complain.
 const unlock = () => {
+  unlocked = true;
   const c = getCtx();
   if (c && c.state === 'suspended') c.resume().catch(() => {});
 };
@@ -55,6 +58,7 @@ export const SOUNDS = [
 export const DEFAULT_SOUND = 'chime';
 
 export function playSound(id) {
+  if (!unlocked) return; // before the first tap or key press the browser refuses sound
   const sound = SOUNDS.find((s) => s.id === id) || SOUNDS[0];
   const c = getCtx();
   if (!c || !sound.notes.length) return;

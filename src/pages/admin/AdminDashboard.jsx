@@ -9,6 +9,9 @@ import TeachersTab from './TeachersTab';
 import GuardiansTab from './GuardiansTab';
 import ArchivesTab from './ArchivesTab';
 import ChatLogsTab from './ChatLogsTab';
+import SchoolPostsTab from './SchoolPostsTab';
+import ActivityLogTab from './ActivityLogTab';
+import BackupTab from './BackupTab';
 import ProfilePanel from '../../components/ProfilePanel';
 
 // Chat logs and Archives sit in the top-right menu to keep the bottom nav short.
@@ -23,7 +26,24 @@ export default function AdminDashboard() {
   const pending = db.guardianLinks.filter((l) => l.status === 'Pending').length;
 
   return (
-    <Shell {...{ user, logout, theme, toggleTheme, nav: NAV, view, setView, badges: { Guardians: pending > 0 }, menuItems: [{ label: 'Chat logs', icon: 'chat', onClick: () => setView('Chat logs') }, { label: 'Archives', icon: 'archive', onClick: () => setView('Archives') }] }}>
+    <Shell {...{
+    user,
+    logout,
+    theme,
+    toggleTheme,
+    nav: NAV,
+    view,
+    setView,
+    badges: { Guardians: pending > 0 },
+    menuItems: [
+      { label: 'Chat logs', icon: 'chat', onClick: () => setView('Chat logs') },
+      { label: 'Archives', icon: 'archive', onClick: () => setView('Archives') },
+
+      { label: 'School announcements', icon: 'posts', onClick: () => setView('School announcements') },
+      { label: 'Activity log', icon: 'attendance', onClick: () => setView('Activity log') },
+      { label: 'Backup and restore', icon: 'rooms', onClick: () => setView('Backup and restore') }
+    ]
+  }}>
       {view === 'Dashboard' && (
         <>
           <div className="hero">
@@ -61,6 +81,9 @@ export default function AdminDashboard() {
       {view === 'Guardians' && <GuardiansTab />}
       {view === 'Archives' && <ArchivesTab />}
       {view === 'Chat logs' && <ChatLogsTab />}
+      {view === 'School announcements' && <SchoolPostsTab />}
+      {view === 'Activity log' && <ActivityLogTab />}
+      {view === 'Backup and restore' && <BackupTab />}
       {view === 'Profile' && <ProfilePanel />}
     </Shell>
   );

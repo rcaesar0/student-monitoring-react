@@ -3,6 +3,7 @@ import { Panel, Empty, Badge } from '../../components/UI';
 import { AttachmentList } from '../../components/Attachments';
 import { useApp } from '../../context/AppContext';
 import { formatDate } from '../../utils/helpers';
+import { confirmDialog } from '../../utils/dialog';
 
 // Archived announcements and activities for one room.
 export default function ArchivedPosts({ room }) {
@@ -21,9 +22,18 @@ export default function ArchivedPosts({ room }) {
           <div className="row-actions spread">
             <b>{x.title}</b>
             <div className="row-actions">
-              <button className="btn-sm" onClick={() => repo.update(x.col, x.id, { status: 'Active' })}>Restore</button>
-              <button className="danger-outline btn-sm" onClick={() => window.confirm('Delete this post for good?') && repo.remove(x.col, x.id)}>Delete</button>
-            </div>
+  <button className="btn-sm" onClick={() => repo.update(x.col, x.id, { status: 'Active' })}>Restore</button>
+  <button
+    className="btn-sm danger"
+    onClick={async () => {
+      if (await confirmDialog({ title: 'Delete this post?', message: 'This removes it for good.', confirmText: 'Delete', tone: 'danger' })) {
+        repo.remove(x.col, x.id);
+      }
+    }}
+  >
+    Delete
+  </button>
+</div>
           </div>
           <small>Posted {formatDate(x.date)}</small>
           <div className="due-line"><Badge tone={x.kind === 'Activity' ? 'amber' : 'blue'}>{x.kind}</Badge></div>

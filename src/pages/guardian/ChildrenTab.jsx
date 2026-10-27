@@ -1,17 +1,19 @@
 import React from 'react';
 import { Panel, Empty, Badge } from '../../components/UI';
 import SchedulePanel from '../../components/SchedulePanel';
+import SchoolPosts from '../../components/SchoolPosts';
 import Icon from '../../components/Icon';
 import { useApp } from '../../context/AppContext';
-import { fullName, dateStr, dueInfo } from '../../utils/helpers';
+import { confirmDialog } from '../../utils/dialog';
+import { fullName, dateStr, dueInfo, formatDate } from '../../utils/helpers';
 import { roomsOfStudent, attendanceSummary } from '../../utils/selectors';
 import { slotsOf } from '../../utils/schedule';
 import { isPastDue } from '../../utils/autoArchive';
-import { isLive } from '../../utils/meet';
 import { roomStyle } from '../../utils/roomThemes';
 
-// Guardian landing page: live classes, class schedule, what is coming up, then the rooms each child has joined.
-// Tapping a room opens it (and only then does the bottom nav appear).
+// Guardian home. Order: link notes, messages from a teacher, school announcements, today's classes,
+// coming up, then the rooms each child has joined.
+// "Coming up" only points to scheduled class posts (title, type, date). The full post is in the Updates tab.
 export default function ChildrenTab({ kids, goLink, openRoom }) {
   const { db, repo, user } = useApp();
   const pending = db.guardianLinks.filter((l) => l.guardianId === user.id && l.status === 'Pending');
@@ -19,8 +21,8 @@ export default function ChildrenTab({ kids, goLink, openRoom }) {
   // Declined or removed requests stay visible until the guardian dismisses them.
   const notes = db.guardianLinks.filter((l) => l.guardianId === user.id && (l.status === 'Declined' || l.status === 'Revoked') && !l.dismissed);
 
-  function unlink(child) {
-    if (!window.confirm(`Unlink ${fullName(child)} from your account? You can link again later with the room code.`)) return;
+  async function unlink(child) {
+    if (!(await confirmDialog({ title: `Unlink ${fullName(child)}?`, message: 'This removes your child from your account. You can link again later.', confirmText: 'Unlink', tone: 'danger' }))) return;
     db.guardianLinks.filter((l) => l.guardianId === user.id && l.studentId === child.id).forEach((l) => repo.remove('guardianLinks', l.id));
   }
 
@@ -31,16 +33,24 @@ export default function ChildrenTab({ kids, goLink, openRoom }) {
   // Weekly class times of those rooms, with the teacher's name and the child.
   const allRooms = [...kidsByRoom.keys()].map((id) => db.rooms.find((r) => r.id === id)).filter(Boolean);
   const slots = slotsOf(allRooms).map((s) => ({ ...s, kids: kidsByRoom.get(s.room.id).map((c) => c.firstName) }));
-  const liveRooms = allRooms.filter(isLive);
-  const teacherOf = (room) => db.teachers.find((x) => x.id === room.teacherId);
 
-  // Scheduled activities that have not passed yet, soonest first. For viewing only.
+  // Early-warning messages the guardian has not marked as seen yet (last 14 days). Tapping opens the room's Updates.
+  const cutoff = (() => { const d = new Date(); d.setDate(d.getDate() - 14); return dateStr(d); })();
+  const teacherMessages = (db.alerts || [])
+    .filter((a) => a.kind === 'risk' && (a.status || 'Notified') === 'Notified' && a.date >= cutoff
+      && kidsByRoom.has(a.roomId) && kids.some((c) => c.id === a.studentId))
+    .sort((a, b) => (b.at || 0) - (a.at || 0));
+
+  // Activities and announcements with a schedule that has not passed yet, soonest first. For viewing only.
   const today = dateStr();
-  const upcoming = db.activities
+  const comingUp = [
+    ...db.activities.map((x) => ({ ...x, kind: 'Activity' })),
+    ...db.announcements.map((x) => ({ ...x, kind: 'Announcement' })),
+  ]
     .filter((x) => x.status !== 'Archived' && x.dueDate && !isPastDue(x) && kidsByRoom.has(x.roomId))
-    .sort((a, b) => `${a.dueDate} ${a.dueTime || ''}`.localeCompare(`${b.dueDate} ${b.dueTime || ''}`))
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0, 10)
-    .map((x) => ({ ...x, info: dueInfo({ ...x, kind: 'Activity' }, today) }));
+    .map((x) => ({ ...x, info: dueInfo(x, today) }));
 
   return (
     <>
@@ -48,7 +58,7 @@ export default function ChildrenTab({ kids, goLink, openRoom }) {
         const s = db.students.find((x) => x.id === l.studentId);
         return (
           <div className="info pending-note" key={l.id}>
-            {l.viaAdmin ? 'Waiting for the school office to approve your request for' : 'Waiting for the teacher to approve your request for'} <b>{s ? fullName(s) : 'your child'}</b>.
+            Waiting for the teacher to approve your request for <b>{s ? fullName(s) : 'your child'}</b>.
           </div>
         );
       })}
@@ -67,48 +77,51 @@ export default function ChildrenTab({ kids, goLink, openRoom }) {
         );
       })}
 
-      {liveRooms.length > 0 && (
-        <Panel title="Live class" actions={<Badge tone="green">Live</Badge>}>
-          {liveRooms.map((r) => {
-            const t = teacherOf(r);
+      {teacherMessages.length > 0 && (
+        <Panel title="Message from the teacher" actions={<Badge tone="amber">{teacherMessages.length}</Badge>}>
+          {teacherMessages.map((a) => {
+            const child = kids.find((c) => c.id === a.studentId);
+            const room = db.rooms.find((r) => r.id === a.roomId);
             return (
-              <div className="live-row" key={r.id}>
+              <button className="due-row" key={a.id} onClick={() => openRoom(a.roomId, 'Updates')}>
                 <span className="due-text">
-                  <b>{r.subject}</b>
-                  <small>{r.name}{t ? ` · ${fullName(t)}` : ''}</small>
+                  <b>About {child.firstName}</b>
+                  <small>{room?.subject} · {room?.name} · {formatDate(a.date)}</small>
                 </span>
-                <a className="join-live" href={r.meet.link} target="_blank" rel="noopener noreferrer">Join on Google Meet</a>
-              </div>
+                <Badge tone="amber">New</Badge>
+              </button>
             );
           })}
         </Panel>
       )}
 
+      <SchoolPosts />
+
       {kids.length > 0 && (
         <SchedulePanel
           slots={slots} showTeacher showKids={kids.length > 1}
-          emptyText="No class schedule yet. The teacher adds the class times."
+          emptyText="No class schedule for today."
         />
       )}
 
       {kids.length > 0 && (
-        <Panel title="Upcoming schedule" actions={upcoming.length ? <Badge tone="neutral">{upcoming.length}</Badge> : null}>
-          {upcoming.length ? (
-            upcoming.map((x) => {
+        <Panel title="Coming up" actions={comingUp.length ? <Badge tone="neutral">{comingUp.length}</Badge> : null}>
+          {comingUp.length ? (
+            comingUp.map((x) => {
               const room = db.rooms.find((r) => r.id === x.roomId);
               const names = kidsByRoom.get(x.roomId).map((c) => c.firstName).join(', ');
               return (
-                <button className="due-row" key={x.id} onClick={() => openRoom(x.roomId, 'Updates')}>
+                <button className="due-row" key={`${x.kind}-${x.id}`} onClick={() => openRoom(x.roomId, 'Updates')}>
                   <span className="due-text">
                     <b>{x.title}</b>
-                    <small>{room?.subject} · {room?.name}{kids.length > 1 ? ` · ${names}` : ''}</small>
+                    <small>{x.kind === 'Announcement' ? 'Class announcement' : x.kind} · {room?.subject} · {room?.name}{kids.length > 1 ? ` · ${names}` : ''}</small>
                   </span>
                   <Badge tone={x.info.tone}>{x.info.label}</Badge>
                 </button>
               );
             })
           ) : (
-            <Empty text="Nothing scheduled right now." />
+            <Empty text="Nothing coming up right now." />
           )}
         </Panel>
       )}
@@ -124,24 +137,21 @@ export default function ChildrenTab({ kids, goLink, openRoom }) {
                 <small>{sum.present} present · {sum.late} late · {sum.absent} absent{sum.excused ? ` · ${sum.excused} excused` : ''}</small>
               </div>
               <h4 className="mini-h">Rooms</h4>
-              <div className="room-list">
-                {rooms.map((r) => {
-                  const t = teacherOf(r);
-                  return (
-                    <div className="room-wrap" key={r.id}>
-                      <button className="room-mini" style={roomStyle(r.theme)} onClick={() => openRoom(r.id)}>
+              <div className="rooms-box">
+                <div className="room-list">
+                  {rooms.map((r) => {
+                    const t = db.teachers.find((x) => x.id === r.teacherId);
+                    return (
+                      <button className="room-mini" key={r.id} style={roomStyle(r.theme)} onClick={() => openRoom(r.id)}>
                         <b>{r.name}</b>
                         <span>{r.subject}</span>
                         {t && <small>{fullName(t)}</small>}
                         <span className="room-open">Open room <Icon name="chevron" size={14} /></span>
                       </button>
-                      {isLive(r) && (
-                        <a className="join-live join-room" href={r.meet.link} target="_blank" rel="noopener noreferrer">Join class on Google Meet</a>
-                      )}
-                    </div>
-                  );
-                })}
-                {!rooms.length && <p className="muted">Not enrolled in a room yet.</p>}
+                    );
+                  })}
+                  {!rooms.length && <p className="muted">Not enrolled in a room yet.</p>}
+                </div>
               </div>
             </Panel>
           );

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Panel } from '../../components/UI';
+import DateField from '../../components/DateField';
 import { useApp } from '../../context/AppContext';
 import { dateStr } from '../../utils/helpers';
 import { linkPage } from '../../utils/goHome';
@@ -101,12 +102,12 @@ export default function LinkChildTab() {
           {lrnError && <span className="field-error" role="alert">{lrnError}</span>}
         </label>
         {noCode ? (
-          <label>Child’s birthdate<input type="date" value={birthdate} onChange={(e) => setBirthdate(e.target.value)} /></label>
+          <label>Child’s birthdate<DateField max={dateStr()} value={birthdate} onChange={(e) => setBirthdate(e.target.value)} /></label>
         ) : (
           <label>Link code<input className="code-input" value={code} onChange={changeCode} placeholder="ABCD2345" autoCapitalize="characters" autoComplete="off" /></label>
         )}
         {msg && <div className={msg.type}>{msg.text}</div>}
-        <button type="submit" className="primary wide">Link</button>
+        <button type="submit" className="primary wide">Send request to the school office</button>
       </form>
       <button type="button" className="text-btn" onClick={() => { setNoCode(!noCode); setMsg(null); }}>
         {noCode ? 'I have a link code' : 'I don’t have a code'}

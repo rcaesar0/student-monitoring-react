@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Panel, Empty, Badge } from '../../components/UI';
 import { AttachmentList } from '../../components/Attachments';
 import { useApp } from '../../context/AppContext';
-import { fullName, formatDate, dueInfo } from '../../utils/helpers';
+import { fullName, formatDate, dueInfo, dateStr } from '../../utils/helpers';
 import { attendanceSummary, roomsOfStudent } from '../../utils/selectors';
 import { studentGrade, quarterGrades, isReleasedTo, groupOf, categoryOf, conductedOf, quarterOf, fmt } from '../../utils/grading';
 import { isDone } from '../../utils/autoArchive';
+import ChildReportButton from '../../components/ChildReport';
 import { GRADING, QUARTERS, DEFAULT_QUARTER } from '../../config';
 
 const STATUS_TONE = { Present: 'green', Late: 'orange', Absent: 'red', Excused: 'blue' };
@@ -55,7 +56,7 @@ export function GradesView({ kids, room }) {
       {kids.map((c) => {
         const rooms = room ? [room] : roomsOfStudent(db, c.id);
         return (
-          <Panel key={c.id} title={fullName(c)}>
+          <Panel key={c.id} title={fullName(c)} actions={rooms.length ? <ChildReportButton child={c} rooms={rooms} quarter={quarter} /> : null}>
             {rooms.map((r) => <RoomGrades key={r.id} room={r} student={c} quarter={quarter} />)}
             {!rooms.length && <p className="muted">Not enrolled in a section yet.</p>}
           </Panel>
@@ -125,6 +126,44 @@ function RoomGrades({ room, student, quarter }) {
   );
 }
 
+// Messages from the teacher about a child (early warning). The guardian can press "I've seen this".
+// Resolved warnings and warnings older than 14 days are not shown.
+function TeacherNotes({ kids, roomIds }) {
+  const { db, repo, user } = useApp();
+  const cutoff = (() => { const d = new Date(); d.setDate(d.getDate() - 14); return dateStr(d); })();
+  const notes = (db.alerts || [])
+    .filter((a) => a.kind === 'risk' && roomIds.has(a.roomId) && kids.some((c) => c.id === a.studentId)
+      && a.date >= cutoff && (a.status || 'Notified') !== 'Resolved')
+    .sort((a, b) => (b.at || 0) - (a.at || 0));
+  if (!notes.length) return null;
+
+  const acknowledge = (a) => repo.update('alerts', a.id, { status: 'Acknowledged', ackAt: dateStr(), ackBy: user.id });
+
+  return (
+    <Panel title="Message from the teacher">
+      {notes.map((a) => {
+        const child = kids.find((c) => c.id === a.studentId);
+        const teacher = db.teachers.find((t) => t.id === a.teacherId);
+        const seen = (a.status || 'Notified') === 'Acknowledged';
+        return (
+          <div className="list-card" key={a.id}>
+            <div className="row-actions spread">
+              <b>About {child.firstName}</b>
+              <small>{formatDate(a.date)}{teacher ? ` · ${fullName(teacher)}` : ''}</small>
+            </div>
+            {a.message
+              ? <p style={{ whiteSpace: 'pre-line' }}>{a.message}</p>
+              : <ul className="reasons">{(a.reasons || []).map((r) => <li key={r}>{r}</li>)}</ul>}
+            {seen
+              ? <small>You marked this as seen on {formatDate(a.ackAt)}.</small>
+              : <button className="primary btn-sm" onClick={() => acknowledge(a)}>I’ve seen this</button>}
+          </div>
+        );
+      })}
+    </Panel>
+  );
+}
+
 // Current posts first. Once a post's schedule has passed it moves to the Done tab.
 // Posts a teacher archived by hand are not shown.
 export function UpdatesView({ kids, room }) {
@@ -142,18 +181,19 @@ export function UpdatesView({ kids, room }) {
 
   return (
     <>
+      <TeacherNotes kids={kids} roomIds={roomIds} />
       <div className="role-switch">
         <button className={tab === 'current' ? 'selected' : ''} onClick={() => setTab('current')}>Current ({current.length})</button>
         <button className={tab === 'done' ? 'selected' : ''} onClick={() => setTab('done')}>Done ({done.length})</button>
       </div>
-      <Panel title={tab === 'current' ? 'Announcements & Activities' : 'Done'}>
+      <Panel title={tab === 'current' ? 'Class announcements & activities' : 'Done'}>
         {posts.length ? posts.map((x) => (
           <div className={`list-card ${tab === 'done' ? 'is-done' : ''}`} key={`${x.kind}-${x.id}`}>
             <div className="row-actions spread">
               <b>{x.title}</b>
-              <Badge tone={tab === 'done' ? 'neutral' : x.kind === 'Activity' ? 'amber' : 'blue'}>{tab === 'done' ? 'Done' : x.kind}</Badge>
+              <Badge tone={tab === 'done' ? 'neutral' : x.kind === 'Activity' ? 'amber' : 'blue'}>{tab === 'done' ? 'Done' : x.kind === 'Announcement' ? 'Class announcement' : x.kind}</Badge>
             </div>
-            <small>{formatDate(x.date)} · {db.rooms.find((r) => r.id === x.roomId)?.name}{tab === 'done' ? ` · ${x.kind}` : ''}</small>
+            <small>{formatDate(x.date)} · {db.rooms.find((r) => r.id === x.roomId)?.name}{tab === 'done' ? ` · ${x.kind === 'Announcement' ? 'Class announcement' : x.kind}` : ''}</small>
             {x.dueDate && (
               <div className="due-line">
                 <Badge tone="neutral">{tab === 'done' ? `Was scheduled ${formatDate(x.dueDate)}` : dueInfo(x).label}</Badge>

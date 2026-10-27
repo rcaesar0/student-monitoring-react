@@ -6,43 +6,46 @@ import Chat from '../../components/Chat';
 import { useApp } from '../../context/AppContext';
 import { approvedChildren, roomsOfStudent } from '../../utils/selectors';
 import { chatContacts } from '../../utils/chat';
+import { fullName } from '../../utils/helpers';
 import ChildrenTab from './ChildrenTab';
 import { AttendanceView, GradesView, UpdatesView } from './ViewTabs';
 import LinkChildTab from './LinkChildTab';
 
 const LANDING = 'My Children';
-// The bottom nav only exists inside a room the guardian opened. There is no Home item: use the back arrow.
-const ROOM_NAV = ['Updates', 'Attendance', 'Grades'];
-// Pages opened from the top bar. They have no bottom nav; the back arrow returns to where the guardian was.
+// The bottom bar is always there. Updates, Attendance and Grades cover all children and rooms,
+// and the filters at the top narrow them down to one child or one room.
+const ROOM_VIEWS = ['Updates', 'Attendance', 'Grades'];
+const NAV = [LANDING, ...ROOM_VIEWS];
+// Pages opened from the top bar. They have no bottom bar; the back arrow returns to where the guardian was.
 const OVERLAYS = ['Chat', 'Profile', 'Link a Child'];
 
 // Guardians are view-only. They see only children the school linked to them.
 export default function GuardianDashboard() {
   const { db, user, logout, theme, toggleTheme } = useApp();
-  const validPage = (p) => !!p && typeof p.roomId === 'string' && [LANDING, ...ROOM_NAV, ...OVERLAYS].includes(p.view);
+  const validPage = (p) => !!p && typeof p.roomId === 'string' && [...NAV, ...OVERLAYS].includes(p.view);
   const [page, setPage] = usePersistentState(`sm_nav_guardian_${user.id}_page`, { view: LANDING, roomId: '' }, validPage);
   const [returnTo, setReturnTo] = usePersistentState(`sm_nav_guardian_${user.id}_back`, null, (p) => p === null || validPage(p));
+  const [childId, setChildId] = useState(''); // '' = all children
 
   const kids = approvedChildren(db, user.id);
-  const rooms = [...new Map(kids.flatMap((c) => roomsOfStudent(db, c.id)).map((r) => [r.id, r])).values()];
-  const room = rooms.find((r) => r.id === page.roomId) || null;
-  // If the room disappears (child unlinked, room closed) fall back to the landing page.
-  const view = ROOM_NAV.includes(page.view) && !room ? LANDING : page.view;
-  const inRoom = ROOM_NAV.includes(view) && !!room;
-  const kidsInRoom = room ? kids.filter((c) => roomsOfStudent(db, c.id).some((r) => r.id === room.id)) : kids;
+  const view = page.view;
+  const isRoomView = ROOM_VIEWS.includes(view);
 
-  // One function for the dock, bell, chat button and profile menu.
+  // Narrow by child first, then by room. An old room or child that no longer applies simply means "all".
+  const childKids = kids.filter((c) => !childId || c.id === childId);
+  const rooms = [...new Map(childKids.flatMap((c) => roomsOfStudent(db, c.id)).map((r) => [r.id, r])).values()];
+  const room = rooms.find((r) => r.id === page.roomId) || null;
+  const kidsInView = room ? childKids.filter((c) => roomsOfStudent(db, c.id).some((r) => r.id === room.id)) : childKids;
+
+  // One function for the bottom bar, bell, chat button and profile menu.
   function go(next, roomId) {
     if (OVERLAYS.includes(next)) {
       if (!OVERLAYS.includes(view)) setReturnTo({ view, roomId: page.roomId });
       return setPage({ view: next, roomId: page.roomId });
     }
-    if (ROOM_NAV.includes(next)) {
-      const target = roomId || page.roomId || (rooms.length === 1 ? rooms[0].id : '');
-      return setPage(target ? { view: next, roomId: target } : { view: LANDING, roomId: '' });
-    }
     setReturnTo(null);
-    setPage({ view: LANDING, roomId: '' });
+    if (ROOM_VIEWS.includes(next)) return setPage({ view: next, roomId: roomId !== undefined ? roomId : page.roomId });
+    return setPage({ view: LANDING, roomId: '' });
   }
 
   function back() {
@@ -51,15 +54,32 @@ export default function GuardianDashboard() {
     setReturnTo(null);
   }
 
-  const showBack = view !== LANDING;
-  const title = inRoom ? `${view} · ${room.subject}` : view;
+  const title = isRoomView && room ? `${view} · ${room.subject}` : view;
+  const showFilters = isRoomView && (kids.length > 1 || rooms.length > 1);
 
   return (
-    <Shell {...{ user, logout, theme, toggleTheme, view, title, setView: go }} nav={inRoom ? ROOM_NAV : []} onBack={showBack ? back : undefined}>
-      {view === LANDING && <ChildrenTab kids={kids} goLink={() => go('Link a Child')} openRoom={(id, v = ROOM_NAV[0]) => go(v, id)} />}
-      {view === 'Attendance' && <AttendanceView kids={kidsInRoom} room={room} />}
-      {view === 'Grades' && <GradesView kids={kidsInRoom} room={room} />}
-      {view === 'Updates' && <UpdatesView kids={kidsInRoom} room={room} />}
+    <Shell {...{ user, logout, theme, toggleTheme, view, title, setView: go }} nav={OVERLAYS.includes(view) ? [] : NAV} onBack={OVERLAYS.includes(view) ? back : undefined}>
+      {showFilters && (
+        <div className="toolbar">
+          {kids.length > 1 && (
+            <select value={childId} onChange={(e) => setChildId(e.target.value)} aria-label="Child">
+              <option value="">All children</option>
+              {kids.map((c) => <option key={c.id} value={c.id}>{fullName(c)}</option>)}
+            </select>
+          )}
+          {rooms.length > 1 && (
+            <select value={room ? room.id : ''} onChange={(e) => setPage({ view, roomId: e.target.value })} aria-label="Room">
+              <option value="">All rooms</option>
+              {rooms.map((r) => <option key={r.id} value={r.id}>{r.subject} · {r.name}</option>)}
+            </select>
+          )}
+        </div>
+      )}
+
+      {view === LANDING && <ChildrenTab kids={kids} goLink={() => go('Link a Child')} openRoom={(id, v = 'Updates') => go(v, id)} />}
+      {view === 'Attendance' && <AttendanceView kids={kidsInView} room={room} />}
+      {view === 'Grades' && <GradesView kids={kidsInView} room={room} />}
+      {view === 'Updates' && <UpdatesView kids={kidsInView} room={room} />}
       {view === 'Link a Child' && <LinkChildTab />}
       {view === 'Chat' && <Chat contacts={chatContacts(db, user)} />}
       {view === 'Profile' && <ProfilePanel />}

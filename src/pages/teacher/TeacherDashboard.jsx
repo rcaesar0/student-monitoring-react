@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import Shell from '../../components/Shell';
-import { usePersistentState } from '../../utils/usePersistentState';
 import ProfilePanel from '../../components/ProfilePanel';
 import RoomPicker from '../../components/RoomPicker';
 import Chat from '../../components/Chat';
 import SchedulePanel from '../../components/SchedulePanel';
+import SchoolPosts from '../../components/SchoolPosts';
+import EarlyWarningPanel from '../../components/EarlyWarningPanel';
 import { Panel, Empty, Badge } from '../../components/UI';
 import { useApp } from '../../context/AppContext';
 import { teacherAttention } from '../../utils/attention';
@@ -25,13 +26,11 @@ const NAV = ['Dashboard', 'My Rooms', 'Attendance', 'Grades', 'Posts'];
 // Pages opened from the top bar. They are not in the bottom nav, so they get a back arrow.
 const OVERLAYS = ['Chat', 'Requests', 'Profile'];
 const NEEDS_ROOM = ['My Rooms', 'Attendance', 'Grades', 'Posts'];
-const TEACHER_VIEWS = [...NAV, ...OVERLAYS];
 
 export default function TeacherDashboard() {
   const { db, user, logout, theme, toggleTheme } = useApp();
-  // The page and the chosen section are remembered, so reloading the browser keeps you where you were.
-  const [view, setView] = usePersistentState(`sm_nav_teacher_${user.id}_view`, 'Dashboard', (v) => TEACHER_VIEWS.includes(v));
-  const [roomId, setRoomId] = usePersistentState(`sm_nav_teacher_${user.id}_room`, '', (v) => typeof v === 'string');
+  const [view, setView] = useState('Dashboard');
+  const [roomId, setRoomId] = useState('');
 
   // Rooms are assigned by the admin. Teachers never create their own.
   const rooms = db.rooms.filter((r) => r.teacherId === user.id && r.status === 'Active');
@@ -76,7 +75,7 @@ export default function TeacherDashboard() {
 
 // Announcements, activities and the archive share one tab with a switch.
 function PostsHub({ room }) {
-  const [kind, setKind] = usePersistentState('sm_nav_teacher_posts', 'announcements', (v) => ['announcements', 'activities', 'archive'].includes(v));
+  const [kind, setKind] = useState('announcements');
   return (
     <>
       <div className="role-switch">
@@ -92,6 +91,8 @@ function PostsHub({ room }) {
 }
 
 // The dashboard answers "what needs me today?" across all rooms. The tabs only show one room at a time.
+// Order: things to do first (needs attention, schedule, early warning), then school news, then rooms and calendar.
+// Room announcements are never shown here. They live in Posts, inside each room.
 function Overview({ rooms, attention, open }) {
   const [picking, setPicking] = useState(null);
 
@@ -111,25 +112,30 @@ function Overview({ rooms, attention, open }) {
         )}
       </Panel>
 
-      <SchedulePanel slots={slotsOf(rooms)} emptyText="No class schedule for today." />      <SchedulePanel slots={slotsOf(rooms)} emptyText="No class schedule yet. The school office sets the class times." />
+      <SchedulePanel slots={slotsOf(rooms)} emptyText="No class schedule for today." />
+
+      <EarlyWarningPanel rooms={rooms} />
+
+      <SchoolPosts />
 
       <Panel title="My rooms">
         {rooms.length ? (
-          <div className="room-list">
-            {rooms.map((r) => (
-              <div className="room-card2" key={r.id}>
-                <button className="room-banner" style={roomStyle(r.theme)} onClick={() => open('My Rooms', r.id)}>
-                  <b>{r.name}</b>
-                  <span>{r.subject}</span>
-                </button>
-                <div className="room-body">
-                  <div className="room-detail"><small>Grade level</small><b>{r.gradeLevel}</b></div>
-                  <div className="room-detail"><small>Subject</small><b>{r.subject}</b></div>
-                  <div className="room-detail"><small>Room code</small><b>{r.code}</b></div>
-                  <button className="btn-sm" onClick={() => setPicking(r)}>Change color</button>
+          <div className="rooms-box">
+            <div className="room-list">
+              {rooms.map((r) => (
+                <div className="room-card2" key={r.id}>
+                  <button className="room-banner" style={roomStyle(r.theme)} onClick={() => open('My Rooms', r.id)}>
+                    <b>{r.name}</b>
+                    <span>{r.subject}</span>
+                  </button>
+                  <div className="room-body">
+                    <div className="room-detail"><small>Grade level</small><b>{r.gradeLevel}</b></div>
+                    <div className="room-detail"><small>Subject</small><b>{r.subject}</b></div>
+                    <button className="btn-sm" onClick={() => setPicking(r)}>Change color</button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         ) : (
           <Empty text="No section assigned to you yet. Please ask the administrator." />
