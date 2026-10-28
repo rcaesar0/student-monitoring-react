@@ -85,7 +85,7 @@ export default function ChildrenTab({ kids, goLink, openRoom }) {
             const child = kids.find((c) => c.id === a.studentId);
             const room = db.rooms.find((r) => r.id === a.roomId);
             return (
-              <button className="due-row" key={a.id} onClick={() => openRoom(a.roomId, 'Updates')}>
+              <button className="due-row" key={a.id} onClick={() => openRoom(a.roomId, 'Announcements')}>
                 <span className="due-text">
                   <b>About {child.firstName}</b>
                   <small>{room?.subject} · {room?.name} · {formatDate(a.date)}</small>
