@@ -4,11 +4,13 @@ import { useApp } from '../../context/AppContext';
 import { dateStr, formatDate } from '../../utils/helpers';
 import { AUDIENCES } from '../../utils/schoolPosts';
 import { confirmDialog } from '../../utils/dialog';
+import { showPost, cardProps } from '../../utils/postDetail';
 import DateField from '../../components/DateField';
 import UndoBar from '../../components/UndoBar';
 
 // Announcements for the whole school. Teachers and guardians see them on their home page and in the bell.
 // Archived announcements move to the Archives page (top-right menu), where they can be restored.
+// Clicking a card opens the floating detail card with the full text.
 export default function SchoolPostsTab() {
   const { db, repo, user } = useApp();
   const [adding, setAdding] = useState(false);
@@ -38,7 +40,11 @@ export default function SchoolPostsTab() {
       <Panel title="School announcements" actions={<button className="primary" onClick={() => setAdding(true)}>+ New announcement</button>}>
         <p className="muted">For things everyone should know: class suspensions, exam weeks, meetings. They are not tied to one room.</p>
         {posts.length ? posts.map((p) => (
-          <div className="list-card" key={p.id}>
+          <div
+            className="list-card clickable"
+            key={p.id}
+            {...cardProps(() => showPost(p, { badge: p.audience === 'Everyone' ? 'School announcement' : `${p.audience} only` }))}
+          >
             <div className="row-actions spread">
               <b>{p.title}</b>
               <Badge tone="blue">{p.audience}</Badge>

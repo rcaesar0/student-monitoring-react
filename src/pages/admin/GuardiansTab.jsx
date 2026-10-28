@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Panel, Empty, Badge, Avatar } from '../../components/UI';
 import CredentialsModal from '../../components/CredentialsModal';
+import UndoBar from '../../components/UndoBar';
 import { useApp } from '../../context/AppContext';
 import { fullName, initials, makeTempPassword, formatDate, dateStr } from '../../utils/helpers';
 import { showPhone } from '../../utils/phone';
@@ -11,6 +12,7 @@ const TONE = { Approved: 'green', Pending: 'amber', Declined: 'red', Revoked: 'r
 export default function GuardiansTab() {
   const { db, repo } = useApp();
   const [creds, setCreds] = useState(null);
+  const [undo, setUndo] = useState(null); // { id, name }
   const guardians = db.guardians.filter((g) => g.status === 'Active');
 
   const linksOf = (gid) => db.guardianLinks.filter((l) => l.guardianId === gid);
@@ -29,13 +31,31 @@ export default function GuardiansTab() {
     });
   }
 
-  async function archive(g) {
+  // Moves the guardian to the Archives page. A short Undo bar brings them back.
+  function archive(g) {
+    repo.update('guardians', g.id, { status: 'Archived' });
+    setUndo({ id: g.id, name: fullName(g) });
+  }
+
+  function undoArchive() {
+    if (!undo) return;
+    repo.update('guardians', undo.id, { status: 'Active' });
+    setUndo(null);
+  }
+
+  // Removes the account for good, together with its links to children.
+  async function remove(g) {
+    const links = linksOf(g.id);
     const ok = await confirmDialog({
-      title: `Archive ${fullName(g)}?`,
-      message: 'They will no longer appear here. You can restore them from Archives.',
-      confirmText: 'Archive', tone: 'danger',
+      title: `Delete ${fullName(g)}?`,
+      message: links.length
+        ? `This removes the account and its ${links.length} link${links.length === 1 ? '' : 's'} to children for good. To keep it for later, use Archive instead.`
+        : 'This removes the account for good. To keep it for later, use Archive instead.',
+      confirmText: 'Delete', tone: 'danger',
     });
-    if (ok) repo.update('guardians', g.id, { status: 'Archived' });
+    if (!ok) return;
+    links.forEach((l) => repo.remove('guardianLinks', l.id));
+    repo.remove('guardians', g.id);
   }
 
   async function revoke(l, s) {
@@ -60,7 +80,8 @@ export default function GuardiansTab() {
                 </div>
                 <div className="row-actions">
                   <button className="btn-sm" onClick={() => reset(g)}>Reset password</button>
-                  <button className="danger-outline btn-sm" onClick={() => archive(g)}>Archive</button>
+                  <button className="btn-sm" onClick={() => archive(g)}>Archive</button>
+                  <button className="danger-outline btn-sm" onClick={() => remove(g)}>Delete</button>
                 </div>
               </div>
               {linksOf(g.id).map((l) => {
@@ -91,6 +112,16 @@ export default function GuardiansTab() {
           <Empty text="No guardians have signed up yet." />
         )}
       </Panel>
+
+      {undo && (
+        <UndoBar
+          key={undo.id}
+          message={`${undo.name} moved to Archives`}
+          onUndo={undoArchive}
+          onClose={() => setUndo(null)}
+        />
+      )}
+
       {creds && <CredentialsModal {...creds} onClose={() => setCreds(null)} />}
     </>
   );

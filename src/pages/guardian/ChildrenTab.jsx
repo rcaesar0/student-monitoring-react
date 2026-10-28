@@ -10,13 +10,14 @@ import { roomsOfStudent, attendanceSummary } from '../../utils/selectors';
 import { slotsOf } from '../../utils/schedule';
 import { isPastDue } from '../../utils/autoArchive';
 import { roomStyle } from '../../utils/roomThemes';
-import { showPost } from '../../utils/postDetail';
+import { useOpenPost } from '../../utils/postDetail';
 
 // Guardian home. Order: link notes, messages from a teacher, school announcements, today's classes,
 // coming up, then the rooms each child has joined.
 // "Coming up" opens the floating detail card for the post. The full list is in the Updates tab.
 export default function ChildrenTab({ kids, goLink, openRoom }) {
   const { db, repo, user } = useApp();
+  const openPost = useOpenPost();
   const pending = db.guardianLinks.filter((l) => l.guardianId === user.id && l.status === 'Pending');
 
   // Declined or removed requests stay visible until the guardian dismisses them.
@@ -115,7 +116,7 @@ export default function ChildrenTab({ kids, goLink, openRoom }) {
                 <button
                   className="due-row"
                   key={`${x.kind}-${x.id}`}
-                  onClick={() => showPost(x, {
+                  onClick={() => openPost(x, {
                     badge: x.kind === 'Announcement' ? 'Class announcement' : x.kind,
                     room: `${room?.subject} · ${room?.name}`,
                   })}

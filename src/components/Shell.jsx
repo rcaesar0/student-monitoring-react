@@ -14,6 +14,7 @@ import { roleCollection } from '../services/auth';
 import { useIdleLogout } from '../utils/idleLogout';
 import { useLang } from '../utils/i18n';
 import { visibleSchoolPosts } from '../utils/schoolPosts';
+import { approvedChildren } from '../utils/selectors';
 import { showPost } from '../utils/postDetail';
 import Flag from './Flag';
 import ErrorBoundary from './ErrorBoundary';
@@ -23,6 +24,9 @@ const NAV_ICON = {
   'My Rooms': 'rooms', Attendance: 'attendance', Grades: 'grades', Posts: 'posts',
   'My Children': 'children', Updates: 'posts',
 };
+
+// Line between two notifications. It is its own element with its own color, so no other style can hide it.
+const DIVIDER = { height: 1, flex: 'none', margin: '0 12px', background: 'rgba(128, 128, 128, 0.45)' };
 
 // Closes a dropdown when you click outside it or press Escape.
 function useDismiss(open, setOpen) {
@@ -48,12 +52,16 @@ function NotificationMenu({ user, setView }) {
   const { t } = useLang();
   const [open, setOpen] = useState(false);
   const ref = useDismiss(open, setOpen);
-  const { items, unread, postIds } = notificationsFor(db, user);
+  const { items: allItems, unread: allUnread, postIds } = notificationsFor(db, user);
+
+  // A guardian with no approved child does not get announcements from the admin or teachers yet.
+  const blocked = user.role === 'Guardian' && approvedChildren(db, user.id).length === 0;
 
   // Guardians and teachers: mark items as seen once the menu is closed, so "new" labels stay visible while open.
+  // Not done for a blocked guardian, so those posts still notify them once a child is approved.
   const wasOpen = useRef(false);
   useEffect(() => {
-    if (wasOpen.current && !open && ['Guardian', 'Teacher'].includes(user.role) && postIds.length) {
+    if (wasOpen.current && !open && !blocked && ['Guardian', 'Teacher'].includes(user.role) && postIds.length) {
       const merged = [...new Set([...(user.seenPosts || []), ...postIds])].slice(-200);
       if (merged.length !== (user.seenPosts || []).length) repo.update(roleCollection(user.role), user.id, { seenPosts: merged });
     }
@@ -72,6 +80,10 @@ function NotificationMenu({ user, setView }) {
     return posts.find((p) => p.id === n.postId || p.id === n.id)
       || posts.find((p) => [`_${p.id}`, `-${p.id}`, `:${p.id}`].some((tail) => id.endsWith(tail)));
   };
+
+  // For a blocked guardian, post notifications are left out of the list and the red count.
+  const items = blocked ? allItems.filter((n) => !postOf(n)) : allItems;
+  const unread = blocked ? Math.max(0, allUnread - allItems.filter((n) => n.fresh && postOf(n)).length) : allUnread;
 
   function pick(n) {
     setOpen(false);
@@ -92,7 +104,7 @@ function NotificationMenu({ user, setView }) {
           {items.length ? (
             items.map((n, i) => (
               <React.Fragment key={n.id}>
-                {i > 0 && <div className="dropdown-sep" />}
+                {i > 0 && <div role="separator" style={DIVIDER} />}
                 <button className={`dropdown-item notif-item ${n.fresh ? 'fresh' : ''}`} onClick={() => pick(n)}>
                   <span className="notif-dot" />
                   <span className="notif-text"><b>{n.title}</b><small>{n.sub}</small></span>

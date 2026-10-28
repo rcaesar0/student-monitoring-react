@@ -10,8 +10,11 @@ export function notificationsFor(db, user) {
   const seen = new Set(user.seenPosts || []);
   const since = daysAgo(7);
 
+  // A guardian with no approved child does not get announcements from the admin or teachers yet.
+  const noKids = user.role === 'Guardian' && approvedChildren(db, user.id).length === 0;
+
   // School-wide announcements from the administrator (teachers and guardians).
-  const school = visibleSchoolPosts(db, user.role)
+  const school = noKids ? [] : visibleSchoolPosts(db, user.role)
     .filter((p) => p.date >= since)
     .map((p) => ({ id: `school-${p.id}`, at: p.date, title: p.title, sub: 'School announcement', view: user.role === 'Teacher' ? 'Dashboard' : 'My Children' }));
 
@@ -45,6 +48,7 @@ export function notificationsFor(db, user) {
 
   // Guardian: new posts, attendance alerts (absent / late / excused, last 7 days), grades released (last 7 days),
   // early-warning alerts the teacher sent (last 14 days, until resolved) and school announcements.
+  // Without an approved child, only the "Waiting for approval" note below is shown.
   const kids = approvedChildren(db, user.id);
   const kidById = new Map(kids.map((c) => [c.id, c]));
   const rooms = new Map(kids.flatMap((c) => roomsOfStudent(db, c.id)).map((r) => [r.id, r]));

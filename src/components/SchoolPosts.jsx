@@ -3,12 +3,16 @@ import { Panel } from './UI';
 import { useApp } from '../context/AppContext';
 import { formatDate } from '../utils/helpers';
 import { visibleSchoolPosts } from '../utils/schoolPosts';
-import { showPost, cardProps } from '../utils/postDetail';
+import { approvedChildren } from '../utils/selectors';
+import { useOpenPost, cardProps } from '../utils/postDetail';
 
 // School-wide announcements from the administrator, shown at the top of the teacher's and guardian's home page.
-// Clicking one opens the floating detail card.
+// A guardian with no approved child does not see them yet.
+// Clicking one opens the floating detail card and clears its notification.
 export default function SchoolPosts() {
   const { db, user } = useApp();
+  const openPost = useOpenPost();
+  if (user.role === 'Guardian' && approvedChildren(db, user.id).length === 0) return null;
   const list = visibleSchoolPosts(db, user.role).slice(0, 5);
   if (!list.length) return null;
   return (
@@ -17,7 +21,7 @@ export default function SchoolPosts() {
         <div
           className="list-card clickable"
           key={p.id}
-          {...cardProps(() => showPost(p, { badge: 'School announcement' }))}
+          {...cardProps(() => openPost(p, { badge: 'School announcement' }))}
         >
           <b>{p.title}</b>
           <small>{formatDate(p.date)}</small>

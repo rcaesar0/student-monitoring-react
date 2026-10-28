@@ -1488,3 +1488,8 @@ button.datefield:disabled { opacity: .55; cursor: not-allowed; }
 }
 @keyframes undo-run { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
+/* Clickable post cards: long titles and descriptions end with "..." and the popup shows the full text */
+.list-card.clickable { overflow: hidden; }
+.list-card.clickable > b,
+.list-card.clickable .row-actions > b { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list-card.clickable > p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; overflow-wrap: anywhere; }

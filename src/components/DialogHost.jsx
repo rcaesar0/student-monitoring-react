@@ -4,6 +4,22 @@ import { registerDialogHost } from '../utils/dialog';
 
 const norm = (o) => (typeof o === 'string' ? { message: o } : o || {});
 
+const LINE = 'var(--border, rgba(128, 128, 128, 0.35))';
+const MUTED = 'var(--muted, #64748b)';
+
+// Styles for the announcement card are set here so they do not depend on global.css.
+const S = {
+  box: { width: 'fit-content', minWidth: 'min(300px, 100%)', maxWidth: 'min(520px, 100%)', maxHeight: '80vh', display: 'flex', flexDirection: 'column', textAlign: 'left' },
+  head: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, textAlign: 'center' },
+  title: { margin: 0, fontSize: '1.15rem', textAlign: 'center', overflowWrap: 'anywhere' },
+  badge: { padding: '3px 12px', borderRadius: 999, fontSize: '0.75rem', fontWeight: 700, background: 'var(--primary-soft, rgba(37, 99, 235, 0.12))', color: 'var(--primary, #2563eb)' },
+  sub: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '2px 14px', fontSize: '0.82rem', color: MUTED },
+  body: { marginTop: 14, paddingTop: 14, borderTop: `1px solid ${LINE}`, fontSize: '0.95rem', lineHeight: 1.5, textAlign: 'left', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', overflowY: 'auto', minHeight: 0, flex: '1 1 auto' },
+  foot: { marginTop: 16, paddingTop: 12, borderTop: `1px solid ${LINE}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  posted: { fontSize: '0.82rem', color: MUTED, textAlign: 'right' },
+  close: { flex: 'none', padding: '0 22px' },
+};
+
 function Icon({ tone }) {
   const danger = tone === 'danger';
   return (
@@ -67,23 +83,26 @@ export default function DialogHost() {
 
   if (isDetail) {
     const meta = (opts.meta || []).filter(([, v]) => v);
+    const posted = meta.find(([label]) => label === 'Posted');
+    const others = meta.filter(([label]) => label !== 'Posted');
     return createPortal(
       <div className="dlg-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) dismiss(); }}>
-        <div className="dlg-box dlg-detail" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
-          <div className="dlg-detail-head">
-            <h3 id="dlg-title" className="dlg-title">{opts.title || 'Announcement'}</h3>
-            {opts.badge && <span className="dlg-badge">{opts.badge}</span>}
+        <div className="dlg-box dlg-detail" style={S.box} role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+          <div style={S.head}>
+            <h3 id="dlg-title" className="dlg-title" style={S.title}>{opts.title || 'Announcement'}</h3>
+            {opts.badge && <span style={S.badge}>{opts.badge}</span>}
+            {others.length > 0 && (
+              <div style={S.sub}>
+                {others.map(([label, value]) => (
+                  <span key={label}><b>{label}</b> {value}</span>
+                ))}
+              </div>
+            )}
           </div>
-          {meta.length > 0 && (
-            <div className="dlg-meta">
-              {meta.map(([label, value]) => (
-                <span key={label}><small>{label}</small> {value}</span>
-              ))}
-            </div>
-          )}
-          {opts.body ? <div className="dlg-body">{opts.body}</div> : <div className="dlg-body is-empty">No further details.</div>}
-          <div className="dlg-actions">
-            <button type="button" autoFocus className="dlg-btn dlg-primary" onClick={dismiss}>Close</button>
+          <div style={{ ...S.body, ...(opts.body ? null : { color: MUTED }) }}>{opts.body || 'No further details.'}</div>
+          <div style={S.foot}>
+            <button type="button" autoFocus className="dlg-btn dlg-primary" style={S.close} onClick={dismiss}>Close</button>
+            {posted && <span style={S.posted}>Posted {posted[1]}</span>}
           </div>
         </div>
       </div>,

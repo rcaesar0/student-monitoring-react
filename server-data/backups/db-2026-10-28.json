@@ -1,0 +1,2226 @@
+{
+  "admins": [
+    {
+      "id": "a-1",
+      "firstName": "Administrator",
+      "lastName": "",
+      "email": "admin@school.local",
+      "password": "admin123"
+    }
+  ],
+  "teachers": [
+    {
+      "id": "t-1",
+      "firstName": "Juan",
+      "middleName": "",
+      "lastName": "Dela Cruz",
+      "email": "teacher@school.local",
+      "personalEmail": "juan@gmail.com",
+      "employeeId": "EMP-001",
+      "subject": "Mathematics",
+      "password": "teacher123",
+      "mustChangePassword": false,
+      "status": "Active",
+      "photo": "data:image/jpeg;base64,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",
+      "chatPrefs": {
+        "g-1": {
+          "clearedAt": 1792863593942,
+          "pinned": false,
+          "muted": false
+        }
+      },
+      "notifSound": "ding",
+      "seenPosts": [
+        "school-mvosp40cas02u1",
+        "school-mvqppuys7uvyy9"
+      ]
+    }
+  ],
+  "guardians": [
+    {
+      "id": "g-1",
+      "firstName": "Maria",
+      "middleName": "",
+      "lastName": "Santos",
+      "email": "guardian@gmail.com",
+      "password": "guardian123",
+      "mustChangePassword": false,
+      "status": "Active",
+      "failedLinks": 0,
+      "lockedUntil": 0,
+      "photo": "",
+      "seenPosts": [
+        "Announcement-mv7pjr8keu27u5",
+        "Activity-mv7rwmboy7ucrf",
+        "approved-g-1_s-1",
+        "Announcement-mvopwpx0mlcyfq",
+        "school-mvosp40cas02u1",
+        "Announcement-mvou7jc4k163kw",
+        "school-mvqppuys7uvyy9"
+      ],
+      "chatPrefs": {
+        "t-1": {
+          "clearedAt": 1792769843584,
+          "pinned": false
+        }
+      },
+      "notifSound": "marimba",
+      "failedLogins": 0,
+      "lockedLoginUntil": 0
+    },
+    {
+      "firstName": "RYAN CAESAR",
+      "middleName": "AGUSTIN",
+      "lastName": "MENDOZA",
+      "relationship": "Uncle",
+      "relationshipOther": "",
+      "occupation": "",
+      "phone": "",
+      "email": "rcaesarmendoza@gmail.com",
+      "street": "",
+      "barangay": "",
+      "city": "",
+      "province": "",
+      "emName": "",
+      "emPhone": "",
+      "verifiedVia": "email",
+      "termsAcceptedAt": "2026-10-24T14:14:24.457Z",
+      "termsVersion": "1.0",
+      "password": "tipstips",
+      "mustChangePassword": false,
+      "status": "Active",
+      "failedLinks": 0,
+      "lockedUntil": 0,
+      "id": "mvmhcp8rc4iud0",
+      "seenPosts": [
+        "att-r-1_2026-10-25_s-4",
+        "alert-mvmoxwu2mej057",
+        "Announcement-mvopwpx0mlcyfq"
+      ],
+      "viewedPosts": [
+        "Activity-mv7rwmboy7ucrf",
+        "Announcement-mv7pjr8keu27u5"
+      ],
+      "failedLogins": 0,
+      "lockedLoginUntil": 0
+    },
+    {
+      "firstName": "kris",
+      "middleName": "lawrence",
+      "lastName": "ravida",
+      "relationship": "Other",
+      "relationshipOther": "MANGKUKULAM",
+      "occupation": "",
+      "phone": "",
+      "email": "krla.ravida.sjc@phinmaed.com",
+      "street": "",
+      "barangay": "",
+      "city": "",
+      "province": "",
+      "emName": "",
+      "emPhone": "",
+      "verifiedVia": "email",
+      "termsAcceptedAt": "2026-10-26T05:03:20.390Z",
+      "termsVersion": "1.0",
+      "password": "WzPAth7N7pmP9Vy",
+      "mustChangePassword": false,
+      "status": "Archived",
+      "failedLinks": 0,
+      "lockedUntil": 0,
+      "id": "mvosjq6f9n3u9f"
+    },
+    {
+      "firstName": "jeriel",
+      "middleName": "C.",
+      "lastName": "gaa",
+      "relationship": "Sibling",
+      "relationshipOther": "",
+      "occupation": "none",
+      "phone": "",
+      "email": "jeja.gaa.sjc@phinmaed.com",
+      "street": "",
+      "barangay": "",
+      "city": "",
+      "province": "",
+      "emName": "",
+      "emPhone": "",
+      "verifiedVia": "email",
+      "termsAcceptedAt": "2026-10-27T07:18:39.703Z",
+      "termsVersion": "1.0",
+      "password": "jerielgaa02",
+      "mustChangePassword": false,
+      "status": "Active",
+      "failedLinks": 0,
+      "lockedUntil": 0,
+      "id": "mvqctlqwhk3j5i",
+      "failedLogins": 2
+    },
+    {
+      "firstName": "jeriel",
+      "middleName": "",
+      "lastName": "gaa",
+      "relationship": "Sibling",
+      "relationshipOther": "",
+      "occupation": "",
+      "phone": "",
+      "email": "jerielgaa142@gmail.com",
+      "street": "",
+      "barangay": "",
+      "city": "",
+      "province": "",
+      "emName": "",
+      "emPhone": "",
+      "verifiedVia": "email",
+      "termsAcceptedAt": "2026-10-27T07:37:49.061Z",
+      "termsVersion": "1.0",
+      "password": "jrlgaa02",
+      "mustChangePassword": false,
+      "status": "Active",
+      "failedLinks": 0,
+      "lockedUntil": 0,
+      "id": "mvqdi8liz4c375"
+    },
+    {
+      "firstName": "jeriel",
+      "middleName": "",
+      "lastName": "gaa",
+      "relationship": "Sibling",
+      "relationshipOther": "",
+      "occupation": "",
+      "phone": "",
+      "email": "jerielgaa@gmail.com",
+      "street": "",
+      "barangay": "",
+      "city": "",
+      "province": "",
+      "emName": "",
+      "emPhone": "",
+      "verifiedVia": "email",
+      "termsAcceptedAt": "2026-10-27T07:47:05.458Z",
+      "termsVersion": "1.0",
+      "password": "jrlgaa02",
+      "mustChangePassword": false,
+      "status": "Active",
+      "failedLinks": 0,
+      "lockedUntil": 0,
+      "id": "mvqdu5wy0g0htn"
+    },
+    {
+      "firstName": "jeriel",
+      "middleName": "",
+      "lastName": "gaa",
+      "relationship": "Sibling",
+      "relationshipOther": "",
+      "occupation": "",
+      "phone": "",
+      "email": "jeja.gaa@phinmaed.com",
+      "street": "",
+      "barangay": "",
+      "city": "",
+      "province": "",
+      "emName": "",
+      "emPhone": "",
+      "verifiedVia": "email",
+      "termsAcceptedAt": "2026-10-27T07:58:06.245Z",
+      "termsVersion": "1.0",
+      "mustChangePassword": false,
+      "status": "Active",
+      "failedLinks": 0,
+      "lockedUntil": 0,
+      "firebaseUid": "ZedaLRFGU8P3mYoQLEltXX0LA452",
+      "id": "mvqe8d4pfylcga",
+      "failedLogins": 1,
+      "lockedLoginUntil": 1793088511568
+    }
+  ],
+  "students": [
+    {
+      "id": "s-1",
+      "firstName": "John",
+      "middleName": "",
+      "lastName": "Dela Cruz",
+      "lrn": "100000000001",
+      "birthdate": "2014-03-14",
+      "grade": "Grade 6",
+      "status": "Active",
+      "linkCode": "6DBMDTFG"
+    },
+    {
+      "id": "s-2",
+      "firstName": "Anna",
+      "middleName": "",
+      "lastName": "Santos",
+      "lrn": "100000000002",
+      "birthdate": "2014-07-02",
+      "grade": "Grade 6",
+      "status": "Active",
+      "linkCode": "X6BKG2AQ"
+    },
+    {
+      "id": "s-3",
+      "firstName": "Mark",
+      "middleName": "",
+      "lastName": "Reyes",
+      "lrn": "100000000003",
+      "birthdate": "2014-11-23",
+      "grade": "Grade 6",
+      "status": "Active",
+      "linkCode": "PB7GHSWS"
+    },
+    {
+      "id": "s-4",
+      "firstName": "Grace",
+      "middleName": "",
+      "lastName": "Bautista",
+      "lrn": "100000000004",
+      "birthdate": "2014-01-30",
+      "grade": "Grade 6",
+      "status": "Active",
+      "linkCode": "VNF42X7T"
+    },
+    {
+      "id": "s-5",
+      "firstName": "Paolo",
+      "middleName": "",
+      "lastName": "Garcia",
+      "lrn": "100000000005",
+      "birthdate": "2014-05-18",
+      "grade": "Grade 6",
+      "status": "Active",
+      "linkCode": "48CYR4GE"
+    },
+    {
+      "id": "s-6",
+      "firstName": "Liza",
+      "middleName": "",
+      "lastName": "Mendoza",
+      "lrn": "100000000006",
+      "birthdate": "2014-09-09",
+      "grade": "Grade 6",
+      "status": "Active",
+      "linkCode": "DK2ME855"
+    },
+    {
+      "firstName": "123",
+      "middleName": "",
+      "lastName": "123123",
+      "lrn": "123123123123",
+      "birthdate": "2006-02-12",
+      "grade": "Grade 6",
+      "status": "Archived",
+      "id": "mv7o41xc5xpifw",
+      "linkCode": "XA7NZ9V2"
+    },
+    {
+      "firstName": "Miguel",
+      "middleName": "Santos",
+      "lastName": "Alonzo",
+      "lrn": "300000000001",
+      "birthdate": "2014-02-17",
+      "grade": "Grade 6",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zloch3ha",
+      "linkCode": "8NF5Z5DL"
+    },
+    {
+      "firstName": "Sofia",
+      "middleName": "Marie",
+      "lastName": "Villanueva",
+      "lrn": "300000000002",
+      "birthdate": "2014-05-09",
+      "grade": "Grade 6",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zmb0fd57",
+      "linkCode": "NZFRRCRS"
+    },
+    {
+      "firstName": "Gabriel",
+      "middleName": "Lopez",
+      "lastName": "Navarro",
+      "lrn": "300000000003",
+      "birthdate": "2014-08-23",
+      "grade": "Grade 6",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zm6sqpq1",
+      "linkCode": "YSHHFEVK"
+    },
+    {
+      "firstName": "Isabella",
+      "middleName": "Cruz",
+      "lastName": "Ramos",
+      "lrn": "300000000004",
+      "birthdate": "2014-11-30",
+      "grade": "Grade 6",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zm9i5ysw",
+      "linkCode": "GFA7BAPE"
+    },
+    {
+      "firstName": "Lucas",
+      "middleName": "Dizon",
+      "lastName": "Aquino",
+      "lrn": "300000000005",
+      "birthdate": "2015-01-12",
+      "grade": "Grade 6",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zm6nwpex",
+      "linkCode": "XQNNNYF5"
+    },
+    {
+      "firstName": "Bianca",
+      "middleName": "Mae",
+      "lastName": "Castillo",
+      "lrn": "300000000006",
+      "birthdate": "2014-09-04",
+      "grade": "Grade 6",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zm63p7xl",
+      "linkCode": "VHVKMEU2"
+    },
+    {
+      "firstName": "Rafael",
+      "middleName": "Pascual",
+      "lastName": "Mercado",
+      "lrn": "300000000007",
+      "birthdate": "2015-03-21",
+      "grade": "Grade 5",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zmq09pdk",
+      "linkCode": "JWEA35AM"
+    },
+    {
+      "firstName": "Althea",
+      "middleName": "Joy",
+      "lastName": "Domingo",
+      "lrn": "300000000008",
+      "birthdate": "2015-06-14",
+      "grade": "Grade 5",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zmh24t5m",
+      "linkCode": "RF5CVN9T"
+    },
+    {
+      "firstName": "Joaquin",
+      "middleName": "Tan",
+      "lastName": "Fernandez",
+      "lrn": "300000000009",
+      "birthdate": "2015-08-07",
+      "grade": "Grade 5",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zmsgpams",
+      "linkCode": "K2TX4PWW"
+    },
+    {
+      "firstName": "Camille",
+      "middleName": "Ann",
+      "lastName": "Salazar",
+      "lrn": "300000000010",
+      "birthdate": "2015-12-02",
+      "grade": "Grade 5",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zmhyw4iv",
+      "linkCode": "MAW8NB6N"
+    },
+    {
+      "firstName": "Enzo",
+      "middleName": "Gutierrez",
+      "lastName": "Manalo",
+      "lrn": "300000000011",
+      "birthdate": "2016-02-28",
+      "grade": "Grade 5",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zmq44pdx",
+      "linkCode": "92QSANAN"
+    },
+    {
+      "firstName": "Hannah",
+      "middleName": "Grace",
+      "lastName": "Ocampo",
+      "lrn": "300000000012",
+      "birthdate": "2015-10-19",
+      "grade": "Grade 5",
+      "err": "",
+      "status": "Active",
+      "id": "mvavy7zm0cez3c",
+      "linkCode": "J2F86XYQ"
+    }
+  ],
+  "rooms": [
+    {
+      "id": "r-1",
+      "name": "Grade 6 - Rizal",
+      "subject": "Mathematics",
+      "gradeLevel": "Grade 6",
+      "teacherId": "t-1",
+      "code": "Q4KWBX",
+      "status": "Active",
+      "theme": "leaf",
+      "schedule": [
+        {
+          "id": "mvam4p0914q7my",
+          "day": "Monday",
+          "start": "08:00",
+          "end": "10:00"
+        }
+      ],
+      "meet": {
+        "link": "https://meet.google.com/pht-maaq-qej",
+        "at": 1792991379493
+      }
+    },
+    {
+      "name": "Grade 5 - LIly",
+      "subject": "Science",
+      "gradeLevel": "Grade 5",
+      "teacherId": "t-1",
+      "code": "FJ52E7",
+      "status": "Active",
+      "id": "mv58uq801x5eu5",
+      "theme": "slate"
+    },
+    {
+      "name": "Grade 5 - LIly",
+      "subject": "Araling Panlipunan",
+      "gradeLevel": "Grade 5",
+      "teacherId": "t-1",
+      "code": "8X2L52",
+      "status": "Active",
+      "id": "mvdzbf0lmjmrq3"
+    }
+  ],
+  "roomStudents": [
+    {
+      "id": "r-1_s-1",
+      "roomId": "r-1",
+      "studentId": "s-1"
+    },
+    {
+      "id": "r-1_s-2",
+      "roomId": "r-1",
+      "studentId": "s-2"
+    },
+    {
+      "id": "r-1_s-3",
+      "roomId": "r-1",
+      "studentId": "s-3"
+    },
+    {
+      "id": "r-1_s-4",
+      "roomId": "r-1",
+      "studentId": "s-4"
+    },
+    {
+      "id": "r-1_s-5",
+      "roomId": "r-1",
+      "studentId": "s-5"
+    },
+    {
+      "id": "r-1_s-6",
+      "roomId": "r-1",
+      "studentId": "s-6"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-4",
+      "id": "mv58uq801x5eu5_s-4"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-1",
+      "id": "mv58uq801x5eu5_s-1"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-5",
+      "id": "mv58uq801x5eu5_s-5"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-6",
+      "id": "mv58uq801x5eu5_s-6"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-3",
+      "id": "mv58uq801x5eu5_s-3"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-2",
+      "id": "mv58uq801x5eu5_s-2"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-4",
+      "id": "mvdzbf0lmjmrq3_s-4"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-1",
+      "id": "mvdzbf0lmjmrq3_s-1"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-5",
+      "id": "mvdzbf0lmjmrq3_s-5"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-6",
+      "id": "mvdzbf0lmjmrq3_s-6"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-3",
+      "id": "mvdzbf0lmjmrq3_s-3"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-2",
+      "id": "mvdzbf0lmjmrq3_s-2"
+    }
+  ],
+  "guardianLinks": [
+    {
+      "guardianId": "g-1",
+      "studentId": "s-1",
+      "roomId": null,
+      "status": "Approved",
+      "viaAdmin": true,
+      "withCode": true,
+      "createdAt": "2026-10-16",
+      "requests": 1,
+      "dismissed": false,
+      "id": "g-1_s-1",
+      "approvedAt": "2026-10-16"
+    },
+    {
+      "guardianId": "g-1",
+      "studentId": "mvavy7zm63p7xl",
+      "roomId": null,
+      "status": "Declined",
+      "viaAdmin": true,
+      "withCode": true,
+      "createdAt": "2026-10-16",
+      "requests": 1,
+      "dismissed": true,
+      "id": "g-1_mvavy7zm63p7xl"
+    },
+    {
+      "guardianId": "mvmhcp8rc4iud0",
+      "studentId": "s-4",
+      "roomId": null,
+      "status": "Approved",
+      "viaAdmin": true,
+      "withCode": true,
+      "createdAt": "2026-10-25",
+      "requests": 1,
+      "dismissed": false,
+      "id": "mvmhcp8rc4iud0_s-4",
+      "approvedAt": "2026-10-25"
+    },
+    {
+      "guardianId": "mvosjq6f9n3u9f",
+      "studentId": "mvavy7zmh24t5m",
+      "roomId": null,
+      "status": "Revoked",
+      "viaAdmin": true,
+      "withCode": true,
+      "createdAt": "2026-10-26",
+      "requests": 1,
+      "dismissed": false,
+      "id": "mvosjq6f9n3u9f_mvavy7zmh24t5m",
+      "approvedAt": "2026-10-26"
+    }
+  ],
+  "assessments": [],
+  "grades": [],
+  "releases": [],
+  "attendance": [
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-10-10",
+      "status": "Present",
+      "id": "r-1_2026-10-10_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-10-10",
+      "status": "Present",
+      "id": "r-1_2026-10-10_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-10-10",
+      "status": "Present",
+      "id": "r-1_2026-10-10_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-10-10",
+      "status": "Present",
+      "id": "r-1_2026-10-10_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "r-1_2026-10-14_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "r-1_2026-10-14_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "r-1_2026-10-14_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "r-1_2026-10-14_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "r-1_2026-10-14_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "r-1_2026-10-14_s-2"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-4",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-14_s-4"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-1",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-14_s-1"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-5",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-14_s-5"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-6",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-14_s-6"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-3",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-14_s-3"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-2",
+      "date": "2026-10-14",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-14_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "r-1_2026-10-16_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "r-1_2026-10-16_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "r-1_2026-10-16_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "r-1_2026-10-16_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "r-1_2026-10-16_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "r-1_2026-10-16_s-4"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-4",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-16_s-4"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-1",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-16_s-1"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-5",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-16_s-5"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-6",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-16_s-6"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-3",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-16_s-3"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-2",
+      "date": "2026-10-16",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-16_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "r-1_2026-10-21_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "r-1_2026-10-21_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "r-1_2026-10-21_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "r-1_2026-10-21_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "r-1_2026-10-21_s-2"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-4",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-21_s-4"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-1",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-21_s-1"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-5",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-21_s-5"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-6",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-21_s-6"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-3",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-21_s-3"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-2",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-21_s-2"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-4",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-21_s-4"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-1",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-21_s-1"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-5",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-21_s-5"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-6",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-21_s-6"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-3",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-21_s-3"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-2",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-21_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-10-21",
+      "status": "Present",
+      "id": "r-1_2026-10-21_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "r-1_2026-10-24_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "r-1_2026-10-24_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "r-1_2026-10-24_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "r-1_2026-10-24_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "r-1_2026-10-24_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "r-1_2026-10-24_s-2"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-4",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-24_s-4"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-1",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-24_s-1"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-5",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-24_s-5"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-6",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-24_s-6"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-3",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-24_s-3"
+    },
+    {
+      "roomId": "mv58uq801x5eu5",
+      "studentId": "s-2",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mv58uq801x5eu5_2026-10-24_s-2"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-4",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-24_s-4"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-1",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-24_s-1"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-5",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-24_s-5"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-6",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-24_s-6"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-3",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-24_s-3"
+    },
+    {
+      "roomId": "mvdzbf0lmjmrq3",
+      "studentId": "s-2",
+      "date": "2026-10-24",
+      "status": "Present",
+      "id": "mvdzbf0lmjmrq3_2026-10-24_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-10-25",
+      "status": "Absent",
+      "id": "r-1_2026-10-25_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-10-25",
+      "status": "Present",
+      "id": "r-1_2026-10-25_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-10-25",
+      "status": "Present",
+      "id": "r-1_2026-10-25_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-10-25",
+      "status": "Present",
+      "id": "r-1_2026-10-25_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-10-25",
+      "status": "Present",
+      "id": "r-1_2026-10-25_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-10-25",
+      "status": "Present",
+      "id": "r-1_2026-10-25_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-09-25",
+      "status": "Present",
+      "id": "r-1_2026-09-25_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-09-25",
+      "status": "Present",
+      "id": "r-1_2026-09-25_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-09-25",
+      "status": "Present",
+      "id": "r-1_2026-09-25_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-09-25",
+      "status": "Present",
+      "id": "r-1_2026-09-25_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-09-25",
+      "status": "Present",
+      "id": "r-1_2026-09-25_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-09-25",
+      "status": "Absent",
+      "id": "r-1_2026-09-25_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-09-24",
+      "status": "Present",
+      "id": "r-1_2026-09-24_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-09-24",
+      "status": "Present",
+      "id": "r-1_2026-09-24_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-09-24",
+      "status": "Present",
+      "id": "r-1_2026-09-24_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-09-24",
+      "status": "Present",
+      "id": "r-1_2026-09-24_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-09-24",
+      "status": "Present",
+      "id": "r-1_2026-09-24_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-09-24",
+      "status": "Absent",
+      "id": "r-1_2026-09-24_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-09-23",
+      "status": "Present",
+      "id": "r-1_2026-09-23_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-09-23",
+      "status": "Present",
+      "id": "r-1_2026-09-23_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-09-23",
+      "status": "Present",
+      "id": "r-1_2026-09-23_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-09-23",
+      "status": "Present",
+      "id": "r-1_2026-09-23_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-09-23",
+      "status": "Present",
+      "id": "r-1_2026-09-23_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-09-23",
+      "status": "Absent",
+      "id": "r-1_2026-09-23_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-09-22",
+      "status": "Present",
+      "id": "r-1_2026-09-22_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-09-22",
+      "status": "Present",
+      "id": "r-1_2026-09-22_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-09-22",
+      "status": "Present",
+      "id": "r-1_2026-09-22_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-09-22",
+      "status": "Present",
+      "id": "r-1_2026-09-22_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-09-22",
+      "status": "Present",
+      "id": "r-1_2026-09-22_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-09-22",
+      "status": "Absent",
+      "id": "r-1_2026-09-22_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-09-21",
+      "status": "Present",
+      "id": "r-1_2026-09-21_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-09-21",
+      "status": "Present",
+      "id": "r-1_2026-09-21_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-09-21",
+      "status": "Present",
+      "id": "r-1_2026-09-21_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-09-21",
+      "status": "Present",
+      "id": "r-1_2026-09-21_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-09-21",
+      "status": "Present",
+      "id": "r-1_2026-09-21_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-09-21",
+      "status": "Absent",
+      "id": "r-1_2026-09-21_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-09-20",
+      "status": "Present",
+      "id": "r-1_2026-09-20_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-09-20",
+      "status": "Present",
+      "id": "r-1_2026-09-20_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-09-20",
+      "status": "Present",
+      "id": "r-1_2026-09-20_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-09-20",
+      "status": "Present",
+      "id": "r-1_2026-09-20_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-09-20",
+      "status": "Present",
+      "id": "r-1_2026-09-20_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-09-20",
+      "status": "Absent",
+      "id": "r-1_2026-09-20_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-09-19",
+      "status": "Present",
+      "id": "r-1_2026-09-19_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-09-19",
+      "status": "Present",
+      "id": "r-1_2026-09-19_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-09-19",
+      "status": "Present",
+      "id": "r-1_2026-09-19_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-09-19",
+      "status": "Present",
+      "id": "r-1_2026-09-19_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-09-19",
+      "status": "Present",
+      "id": "r-1_2026-09-19_s-2"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-09-19",
+      "status": "Absent",
+      "id": "r-1_2026-09-19_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-4",
+      "date": "2026-09-18",
+      "status": "Absent",
+      "id": "r-1_2026-09-18_s-4"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-1",
+      "date": "2026-09-18",
+      "status": "Present",
+      "id": "r-1_2026-09-18_s-1"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-5",
+      "date": "2026-09-18",
+      "status": "Present",
+      "id": "r-1_2026-09-18_s-5"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-6",
+      "date": "2026-09-18",
+      "status": "Present",
+      "id": "r-1_2026-09-18_s-6"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-3",
+      "date": "2026-09-18",
+      "status": "Present",
+      "id": "r-1_2026-09-18_s-3"
+    },
+    {
+      "roomId": "r-1",
+      "studentId": "s-2",
+      "date": "2026-09-18",
+      "status": "Present",
+      "id": "r-1_2026-09-18_s-2"
+    }
+  ],
+  "announcements": [
+    {
+      "roomId": "r-1",
+      "teacherId": "t-1",
+      "title": "PTA MEETING",
+      "body": "",
+      "date": "2026-10-14",
+      "dueDate": "2026-10-15",
+      "dueTime": "16:00",
+      "attachments": [
+        {
+          "name": "Screenshot 2026-10-09 004421.jpg",
+          "type": "image/jpeg",
+          "size": 6416,
+          "data": "data:image/jpeg;base64,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",
+          "isImage": true
+        }
+      ],
+      "id": "mv7pjr8keu27u5",
+      "status": "Archived",
+      "autoArchived": true
+    },
+    {
+      "roomId": "r-1",
+      "teacherId": "t-1",
+      "title": "PTA MEETING",
+      "body": "",
+      "date": "2026-10-26",
+      "dueDate": "2026-10-26",
+      "attachments": [],
+      "id": "mvopwpx0mlcyfq",
+      "status": "Archived"
+    },
+    {
+      "teacherId": "t-1",
+      "title": "Recognition",
+      "body": "",
+      "date": "2026-10-26",
+      "dueDate": "2026-10-27",
+      "attachments": [],
+      "roomId": "r-1",
+      "id": "mvou7jc4k163kw"
+    }
+  ],
+  "activities": [
+    {
+      "roomId": "r-1",
+      "teacherId": "t-1",
+      "title": "ASS 2",
+      "body": "",
+      "date": "2026-10-10",
+      "dueDate": "2026-10-13",
+      "dueTime": "23:58",
+      "category": "Assignment",
+      "id": "mv2kiakir27bg7",
+      "status": "Archived"
+    },
+    {
+      "roomId": "r-1",
+      "teacherId": "t-1",
+      "title": "Act 2",
+      "body": "",
+      "date": "2026-10-14",
+      "dueDate": "2026-10-16",
+      "dueTime": "23:59",
+      "attachments": [],
+      "category": "Activity",
+      "id": "mv7rwmboy7ucrf",
+      "status": "Archived",
+      "autoArchived": true
+    }
+  ],
+  "events": [],
+  "messages": [
+    {
+      "thread": "g-1__t-1",
+      "from": "t-1",
+      "to": "g-1",
+      "text": "Hello po ms. santos, yung anak niyo po nahuling nagbabato sa room",
+      "at": 1791967350774,
+      "read": true,
+      "id": "mv7v3d2uqkvwdv"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "tangaka",
+      "at": 1791967488377,
+      "read": true,
+      "id": "mv7v6b965lqezg"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "suntukan tayo sir",
+      "at": 1791967502684,
+      "read": true,
+      "id": "mv7v6mak61swwy"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "t-1",
+      "to": "g-1",
+      "text": "meet up sa school gago kang magulang ka",
+      "at": 1791967506575,
+      "read": true,
+      "id": "mv7v6panupe5sn"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "tanga talaga si kris",
+      "at": 1791967537467,
+      "read": true,
+      "id": "mv7v7d4rh7ufig"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "t-1",
+      "to": "g-1",
+      "text": "adik siguro buong pamilya mo kaya kinokonsinte mo kinginanyo",
+      "at": 1791967542949,
+      "read": true,
+      "id": "mv7v7hd104k3mh"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "t-1",
+      "to": "g-1",
+      "text": "hi ma'am, kantutan",
+      "at": 1791967586240,
+      "read": true,
+      "id": "mv7v8erk343pyj"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "Hello",
+      "at": 1792560254258,
+      "read": true,
+      "id": "mvho3cc2tl54cp"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "t-1",
+      "to": "g-1",
+      "text": "lul",
+      "at": 1792560267168,
+      "read": true,
+      "id": "mvho3mao8g9z7h"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "Sir",
+      "at": 1792561694126,
+      "read": true,
+      "id": "mvhoy7cerfr22j"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "t-1",
+      "to": "g-1",
+      "text": "oh",
+      "at": 1792561719678,
+      "read": true,
+      "id": "mvhoyr26v24xkp",
+      "deleted": true,
+      "deletedAt": 1792565192564
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "t-1",
+      "to": "g-1",
+      "text": "ilabyo",
+      "at": 1792561727077,
+      "read": true,
+      "id": "mvhoywrp2oig2j",
+      "edited": true,
+      "editedAt": 1792565179012
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "Kupal",
+      "at": 1792561738675,
+      "read": true,
+      "id": "mvhoz5pvvh6o4u"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "Hou",
+      "at": 1792561745434,
+      "read": true,
+      "id": "mvhozaxmdfpyaf"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "Hoy",
+      "at": 1792561773720,
+      "read": true,
+      "id": "mvhozwrc4211n3"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "Kris",
+      "at": 1792562464064,
+      "read": true,
+      "id": "mvhpepfl6h0hdl"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "Ryna",
+      "at": 1792562556371,
+      "read": true,
+      "id": "mvhpgonn1pxr2p"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "Hi",
+      "at": 1792565383927,
+      "read": true,
+      "id": "mvhr5aevwdwf04"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "Wazap",
+      "at": 1792565411054,
+      "read": true,
+      "id": "mvhr5vcemlq5pu"
+    },
+    {
+      "thread": "g-1__t-1",
+      "from": "g-1",
+      "to": "t-1",
+      "text": "Booboo",
+      "at": 1792565428018,
+      "read": true,
+      "id": "mvhr68fmtrc5p5",
+      "deletedFor": [
+        "t-1"
+      ]
+    },
+    {
+      "thread": "mvmhcp8rc4iud0__t-1",
+      "from": "mvmhcp8rc4iud0",
+      "to": "t-1",
+      "text": "hi",
+      "at": 1792864182659,
+      "read": true,
+      "id": "mvmp1kzne78q4n",
+      "deletedFor": [
+        "t-1"
+      ]
+    },
+    {
+      "thread": "mvmhcp8rc4iud0__t-1",
+      "from": "t-1",
+      "to": "mvmhcp8rc4iud0",
+      "text": "sasa",
+      "at": 1792990816121,
+      "read": false,
+      "id": "mvosfrztlkybv8",
+      "edited": true,
+      "editedAt": 1792990829140
+    }
+  ],
+  "audit": [
+    {
+      "at": 1792851264459,
+      "role": "Guest",
+      "actorId": "",
+      "actor": "Guest",
+      "text": "Added guardian account: RYAN CAESAR AGUSTIN MENDOZA",
+      "id": "mvmhcp8rcc9uls"
+    },
+    {
+      "at": 1792863827841,
+      "role": "Guardian",
+      "actorId": "mvmhcp8rc4iud0",
+      "actor": "RYAN CAESAR AGUSTIN MENDOZA",
+      "text": "Guardian link pending: RYAN CAESAR AGUSTIN MENDOZA and Grace Bautista",
+      "id": "mvmotz7li41tmq"
+    },
+    {
+      "at": 1792863872036,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Guardian link approved: RYAN CAESAR AGUSTIN MENDOZA and Grace Bautista",
+      "id": "mvmouxb8tflow1"
+    },
+    {
+      "at": 1792864011386,
+      "role": "Teacher",
+      "actorId": "t-1",
+      "actor": "Juan Dela Cruz",
+      "text": "Sent an early-warning alert about Grace Bautista",
+      "id": "mvmoxwu23y18l8"
+    },
+    {
+      "at": 1792986567732,
+      "role": "Teacher",
+      "actorId": "t-1",
+      "actor": "Juan Dela Cruz",
+      "text": "Added announcement: “PTA MEETING”",
+      "id": "mvopwpx01qertv"
+    },
+    {
+      "at": 1792988182560,
+      "role": "Guardian",
+      "actorId": "mvmhcp8rc4iud0",
+      "actor": "RYAN CAESAR AGUSTIN MENDOZA",
+      "text": "Password changed or reset for guardian account RYAN CAESAR AGUSTIN MENDOZA",
+      "id": "mvoqvbxdcflpqd"
+    },
+    {
+      "at": 1792990383913,
+      "role": "Teacher",
+      "actorId": "t-1",
+      "actor": "Juan Dela Cruz",
+      "text": "Updated early-warning alert User: status, resolvedAt",
+      "id": "mvos6ii1n6si8s"
+    },
+    {
+      "at": 1792991000391,
+      "role": "Guest",
+      "actorId": "",
+      "actor": "Guest",
+      "text": "Added guardian account: kris lawrence ravida",
+      "id": "mvosjq6fjdm8i6"
+    },
+    {
+      "at": 1792991071723,
+      "role": "Guardian",
+      "actorId": "mvosjq6f9n3u9f",
+      "actor": "kris lawrence ravida",
+      "text": "Guardian link pending: kris lawrence ravida and Althea Joy Domingo",
+      "id": "mvosl97vtr6tum"
+    },
+    {
+      "at": 1792991118125,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Guardian link approved: kris lawrence ravida and Althea Joy Domingo",
+      "id": "mvosm90t3woraa"
+    },
+    {
+      "at": 1792991166004,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Guardian link revoked: kris lawrence ravida and Althea Joy Domingo",
+      "id": "mvosn9ysd4ruu3"
+    },
+    {
+      "at": 1792991185963,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived guardian account: kris lawrence ravida",
+      "id": "mvosnpd7tdol5w"
+    },
+    {
+      "at": 1792991251596,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Added school announcement: “PTA MEETING - 8:00 AM”",
+      "id": "mvosp40cmy4wtb"
+    },
+    {
+      "at": 1792991379493,
+      "role": "Teacher",
+      "actorId": "t-1",
+      "actor": "Juan Dela Cruz",
+      "text": "Updated section Grade 6 - Rizal: meet",
+      "id": "mvosrup1oesqkd"
+    },
+    {
+      "at": 1792993744742,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Removed school announcement: “PTA MEETING - 8:00 AM”",
+      "id": "mvou6jqeake2a4"
+    },
+    {
+      "at": 1792993776472,
+      "role": "Teacher",
+      "actorId": "t-1",
+      "actor": "Juan Dela Cruz",
+      "text": "Archived announcement “PTA MEETING”",
+      "id": "mvou787sndcltu"
+    },
+    {
+      "at": 1792993790884,
+      "role": "Teacher",
+      "actorId": "t-1",
+      "actor": "Juan Dela Cruz",
+      "text": "Added announcement: “Recognition”",
+      "id": "mvou7jc40s4qvh"
+    },
+    {
+      "at": 1793106976685,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Guardian link revoked: Maria Santos and John Dela Cruz",
+      "id": "mvqpli25lqtg8a"
+    },
+    {
+      "at": 1793107180036,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Added school announcement: “ALL”",
+      "id": "mvqppuysvel555"
+    },
+    {
+      "at": 1793107310007,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqpsn93xi8lwe"
+    },
+    {
+      "at": 1793107317027,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqpsso3l9nssa"
+    },
+    {
+      "at": 1793107317444,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqpsszo93r8qx"
+    },
+    {
+      "at": 1793107317760,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqpst8gollton"
+    },
+    {
+      "at": 1793107318084,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqpsthgnk7vh2"
+    },
+    {
+      "at": 1793107318389,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqpstpxtag2hs"
+    },
+    {
+      "at": 1793107318772,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqpsu0k4eww7c"
+    },
+    {
+      "at": 1793108015083,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqq7raji39k64"
+    },
+    {
+      "at": 1793108016026,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqq7s0qo7vs19"
+    },
+    {
+      "at": 1793108018261,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqq7tqt817wp0"
+    },
+    {
+      "at": 1793108019035,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqq7ucbymdosr"
+    },
+    {
+      "at": 1793108019416,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqq7umweydk88"
+    },
+    {
+      "at": 1793108020272,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqq7vao4z5uhj"
+    },
+    {
+      "at": 1793108020826,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqq7vq2mh1gju"
+    },
+    {
+      "at": 1793108021216,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqq7w0whfuvlc"
+    },
+    {
+      "at": 1793108021562,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqq7wai39nxzb"
+    },
+    {
+      "at": 1793108834888,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqqpbuwaxg9qc"
+    },
+    {
+      "at": 1793108840515,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqqpg77hko65x"
+    },
+    {
+      "at": 1793108846946,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqqpl5u48j0dv"
+    },
+    {
+      "at": 1793108852438,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqqppeeivjqq4"
+    },
+    {
+      "at": 1793108857483,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqqptaj6vts6j"
+    },
+    {
+      "at": 1793108858970,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqqpufuqi2k27"
+    },
+    {
+      "at": 1793108945541,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqqrp8lx5l6ra"
+    },
+    {
+      "at": 1793108947042,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqqrqeas31wgc"
+    },
+    {
+      "at": 1793108950148,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqqrsskn2x3mu"
+    },
+    {
+      "at": 1793108952457,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqqrukpg8nn5s"
+    },
+    {
+      "at": 1793109452062,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqr2k2mfvzmex"
+    },
+    {
+      "at": 1793109453480,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqr2l608pr8px"
+    },
+    {
+      "at": 1793109456233,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Archived school announcement: “ALL”",
+      "id": "mvqr2nah6f2e0d"
+    },
+    {
+      "at": 1793109457402,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Restored school announcement: “ALL”",
+      "id": "mvqr2o6ybzcuue"
+    },
+    {
+      "at": 1793109483240,
+      "role": "Admin",
+      "actorId": "a-1",
+      "actor": "Administrator",
+      "text": "Guardian link approved: Maria Santos and John Dela Cruz",
+      "id": "mvqr384oyeid0v"
+    },
+    {
+      "at": 1793085519704,
+      "role": "Guest",
+      "actorId": "",
+      "actor": "Guest",
+      "text": "Added guardian account: jeriel C. gaa",
+      "id": "mvqctlqwumfye1"
+    },
+    {
+      "at": 1793086669062,
+      "role": "Guest",
+      "actorId": "",
+      "actor": "Guest",
+      "text": "Added guardian account: jeriel gaa",
+      "id": "mvqdi8lisj618f"
+    },
+    {
+      "at": 1793087225458,
+      "role": "Guest",
+      "actorId": "",
+      "actor": "Guest",
+      "text": "Added guardian account: jeriel gaa",
+      "id": "mvqdu5wyu5lz7p"
+    },
+    {
+      "at": 1793087887993,
+      "role": "Guest",
+      "actorId": "",
+      "actor": "Guest",
+      "text": "Added guardian account: jeriel gaa",
+      "id": "mvqe8d4pq9pv7l"
+    }
+  ],
+  "alerts": [
+    {
+      "kind": "risk",
+      "studentId": "s-4",
+      "roomId": "r-1",
+      "teacherId": "t-1",
+      "reasons": [
+        "Attendance is 31% (below 85%)"
+      ],
+      "date": "2026-10-25",
+      "at": 1792864011386,
+      "id": "mvmoxwu2mej057",
+      "status": "Resolved",
+      "resolvedAt": "2026-10-26"
+    }
+  ],
+  "schoolPosts": [
+    {
+      "title": "ALL",
+      "body": "",
+      "audience": "Everyone",
+      "until": "",
+      "date": "2026-10-27",
+      "at": 1793107180036,
+      "status": "Active",
+      "authorId": "a-1",
+      "id": "mvqppuys7uvyy9"
+    }
+  ]
+}
