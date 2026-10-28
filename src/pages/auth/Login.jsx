@@ -123,7 +123,7 @@ export default function Login({ go }) {
         <div className="demo-box">
           <b>Demo accounts</b>
           <div>Admin: admin@school.local / admin123</div>
-          <div>Teacher: teacher@school.local / teacher123</div>
+          <div>Teacher: teacher@gmail.com / teacher123</div>
           <div>Guardian: guardian@gmail.com / guardian123</div>
           <div className="demo-sep">
             Link a child (guardian): LRN <b>100000000001</b> · link code{' '}
