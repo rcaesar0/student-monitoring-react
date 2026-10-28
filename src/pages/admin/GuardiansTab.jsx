@@ -4,6 +4,7 @@ import CredentialsModal from '../../components/CredentialsModal';
 import { useApp } from '../../context/AppContext';
 import { fullName, initials, makeTempPassword, formatDate, dateStr } from '../../utils/helpers';
 import { showPhone } from '../../utils/phone';
+import { confirmDialog } from '../../utils/dialog';
 
 const TONE = { Approved: 'green', Pending: 'amber', Declined: 'red', Revoked: 'red' };
 
@@ -16,15 +17,34 @@ export default function GuardiansTab() {
   const studentOf = (id) => db.students.find((s) => s.id === id);
   const signIn = (g) => g.email || showPhone(g.phone) || '—';
   const approve = (l) => repo.update('guardianLinks', l.id, { status: 'Approved', approvedAt: dateStr() });
+  const restore = (l) => repo.update('guardianLinks', l.id, { status: 'Approved' });
 
   function reset(g) {
     const password = makeTempPassword();
-    repo.update('teachers', t.id, { password, mustChangePassword: true, failedLogins: 0, lockedLoginUntil: 0 });
+    repo.update('guardians', g.id, { password, mustChangePassword: true, failedLogins: 0, lockedLoginUntil: 0 });
     setCreds({
       title: 'Password reset',
       lines: [['Sign-in', signIn(g)], ['Temporary password', password]],
       note: 'The guardian will be asked to set a new password at next sign-in.',
     });
+  }
+
+  async function archive(g) {
+    const ok = await confirmDialog({
+      title: `Archive ${fullName(g)}?`,
+      message: 'They will no longer appear here. You can restore them from Archives.',
+      confirmText: 'Archive', tone: 'danger',
+    });
+    if (ok) repo.update('guardians', g.id, { status: 'Archived' });
+  }
+
+  async function revoke(l, s) {
+    const ok = await confirmDialog({
+      title: 'Revoke this link?',
+      message: `The guardian will no longer see ${s ? fullName(s) : 'this student'}. You can restore it later here or from Archives.`,
+      confirmText: 'Revoke', tone: 'danger',
+    });
+    if (ok) repo.update('guardianLinks', l.id, { status: 'Revoked' });
   }
 
   return (
@@ -40,7 +60,7 @@ export default function GuardiansTab() {
                 </div>
                 <div className="row-actions">
                   <button className="btn-sm" onClick={() => reset(g)}>Reset password</button>
-                  <button className="danger-outline btn-sm" onClick={() => repo.update('guardians', g.id, { status: 'Archived' })}>Archive</button>
+                  <button className="danger-outline btn-sm" onClick={() => archive(g)}>Archive</button>
                 </div>
               </div>
               {linksOf(g.id).map((l) => {
@@ -57,8 +77,9 @@ export default function GuardiansTab() {
                       {l.status === 'Pending' && <button className="btn-sm" onClick={() => approve(l)}>Approve</button>}
                       {l.status === 'Pending' && <button className="danger-outline btn-sm" onClick={() => repo.update('guardianLinks', l.id, { status: 'Declined' })}>Decline</button>}
                       {l.status === 'Approved' && (
-                        <button className="danger-outline btn-sm" onClick={() => repo.update('guardianLinks', l.id, { status: 'Revoked' })}>Revoke</button>
+                        <button className="danger-outline btn-sm" onClick={() => revoke(l, s)}>Revoke</button>
                       )}
+                      {l.status === 'Revoked' && <button className="btn-sm" onClick={() => restore(l)}>Restore</button>}
                     </div>
                   </div>
                 );

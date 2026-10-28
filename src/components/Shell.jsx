@@ -13,6 +13,8 @@ import { showPhone } from '../utils/phone';
 import { roleCollection } from '../services/auth';
 import { useIdleLogout } from '../utils/idleLogout';
 import { useLang } from '../utils/i18n';
+import { visibleSchoolPosts } from '../utils/schoolPosts';
+import { showPost } from '../utils/postDetail';
 import Flag from './Flag';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -58,6 +60,26 @@ function NotificationMenu({ user, setView }) {
     wasOpen.current = open;
   });
 
+  // Every post a notification can point to. A notification that matches one opens the floating card.
+  // Anything else (a request, a message) keeps its old behavior and goes to its page.
+  const posts = [
+    ...visibleSchoolPosts(db, user.role).map((p) => ({ ...p, badge: 'School announcement' })),
+    ...(db.announcements || []).map((p) => ({ ...p, badge: 'Class announcement' })),
+    ...(db.activities || []).map((p) => ({ ...p, badge: 'Activity' })),
+  ];
+  const postOf = (n) => {
+    const id = String(n.id ?? '');
+    return posts.find((p) => p.id === n.postId || p.id === n.id)
+      || posts.find((p) => [`_${p.id}`, `-${p.id}`, `:${p.id}`].some((tail) => id.endsWith(tail)));
+  };
+
+  function pick(n) {
+    setOpen(false);
+    const p = postOf(n);
+    if (!p) return setView(n.view, n.roomId);
+    showPost(p, { badge: p.badge, room: p.roomId ? db.rooms.find((r) => r.id === p.roomId)?.name : '' });
+  }
+
   return (
     <div className="menu-wrap" ref={ref}>
       <button className="icon-btn bell" onClick={() => setOpen(!open)} aria-label="Notifications" aria-expanded={open}>
@@ -68,11 +90,14 @@ function NotificationMenu({ user, setView }) {
         <div className="dropdown notif">
           <div className="dropdown-head"><b>{t('Notifications')}</b></div>
           {items.length ? (
-            items.map((n) => (
-              <button key={n.id} className={`dropdown-item notif-item ${n.fresh ? 'fresh' : ''}`} onClick={() => { setView(n.view, n.roomId); setOpen(false); }}>
-                <span className="notif-dot" />
-                <span className="notif-text"><b>{n.title}</b><small>{n.sub}</small></span>
-              </button>
+            items.map((n, i) => (
+              <React.Fragment key={n.id}>
+                {i > 0 && <div className="dropdown-sep" />}
+                <button className={`dropdown-item notif-item ${n.fresh ? 'fresh' : ''}`} onClick={() => pick(n)}>
+                  <span className="notif-dot" />
+                  <span className="notif-text"><b>{n.title}</b><small>{n.sub}</small></span>
+                </button>
+              </React.Fragment>
             ))
           ) : (
             <div className="dropdown-empty">{t('You’re all caught up.')}</div>
@@ -183,7 +208,9 @@ export default function Shell({ children, user, logout, theme, toggleTheme, nav,
           {onBack ? (
             <button className="icon-btn back-btn" onClick={onBack} aria-label="Back"><Icon name="back" size={22} /></button>
           ) : (
-            <img className="topbar-logo" src="/logo-app.png" alt="Logo" />
+            <button type="button" className="logo-btn" onClick={() => setView(user.role === 'Guardian' ? 'My Children' : 'Dashboard')} aria-label="Go to home">
+              <img className="topbar-logo" src="/logo-app.png" alt="" />
+            </button>
           )}
           <div>
             <small>{t(`${user.role} portal`)}</small>
@@ -192,14 +219,14 @@ export default function Shell({ children, user, logout, theme, toggleTheme, nav,
         </div>
         <div className="topbar-right">
           <LangButton />
-           {user.role !== 'Admin' && <ChatButton user={user} setView={setView} />}
+          {user.role !== 'Admin' && <ChatButton user={user} setView={setView} />}
           <NotificationMenu user={user} setView={setView} />
           <ProfileMenu {...{ user, logout, theme, toggleTheme, setView, menuItems }} />
         </div>
       </header>
 
       <main className="main">
-                <div className="content" key={`${view}-${title || ''}`}><ErrorBoundary>{children}</ErrorBoundary></div>
+        <div className="content" key={`${view}-${title || ''}`}><ErrorBoundary>{children}</ErrorBoundary></div>
       </main>
 
       {nav.length > 0 && (

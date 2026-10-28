@@ -8,6 +8,7 @@ import { studentGrade, quarterGrades, isReleasedTo, groupOf, categoryOf, conduct
 import { isDone } from '../../utils/autoArchive';
 import ChildReportButton from '../../components/ChildReport';
 import { GRADING, QUARTERS, DEFAULT_QUARTER } from '../../config';
+import { showPost, cardProps } from '../../utils/postDetail';
 
 const STATUS_TONE = { Present: 'green', Late: 'orange', Absent: 'red', Excused: 'blue' };
 
@@ -166,6 +167,7 @@ function TeacherNotes({ kids, roomIds }) {
 
 // Current posts first. Once a post's schedule has passed it moves to the Done tab.
 // Posts a teacher archived by hand are not shown.
+// Clicking a post opens the floating detail card.
 export function UpdatesView({ kids, room }) {
   const { db } = useApp();
   const [tab, setTab] = useState('current');
@@ -188,7 +190,14 @@ export function UpdatesView({ kids, room }) {
       </div>
       <Panel title={tab === 'current' ? 'Class announcements & activities' : 'Done'}>
         {posts.length ? posts.map((x) => (
-          <div className={`list-card ${tab === 'done' ? 'is-done' : ''}`} key={`${x.kind}-${x.id}`}>
+          <div
+            className={`list-card clickable ${tab === 'done' ? 'is-done' : ''}`}
+            key={`${x.kind}-${x.id}`}
+            {...cardProps(() => showPost(x, {
+              badge: x.kind === 'Announcement' ? 'Class announcement' : x.kind,
+              room: db.rooms.find((r) => r.id === x.roomId)?.name,
+            }))}
+          >
             <div className="row-actions spread">
               <b>{x.title}</b>
               <Badge tone={tab === 'done' ? 'neutral' : x.kind === 'Activity' ? 'amber' : 'blue'}>{tab === 'done' ? 'Done' : x.kind === 'Announcement' ? 'Class announcement' : x.kind}</Badge>

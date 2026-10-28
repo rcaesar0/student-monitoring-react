@@ -4,8 +4,10 @@ import { AttachmentList } from '../../components/Attachments';
 import { useApp } from '../../context/AppContext';
 import { formatDate } from '../../utils/helpers';
 import { confirmDialog } from '../../utils/dialog';
+import { showPost, cardProps } from '../../utils/postDetail';
 
 // Archived announcements and activities for one room.
+// Clicking a post opens the floating detail card.
 export default function ArchivedPosts({ room }) {
   const { db, repo } = useApp();
   const items = [
@@ -18,22 +20,26 @@ export default function ArchivedPosts({ room }) {
   return (
     <Panel title="Archived posts">
       {items.length ? items.map((x) => (
-        <div className="list-card" key={`${x.col}-${x.id}`}>
+        <div
+          className="list-card clickable"
+          key={`${x.col}-${x.id}`}
+          {...cardProps(() => showPost(x, { badge: x.kind, room: room.name }))}
+        >
           <div className="row-actions spread">
             <b>{x.title}</b>
             <div className="row-actions">
-  <button className="btn-sm" onClick={() => repo.update(x.col, x.id, { status: 'Active' })}>Restore</button>
-  <button
-    className="btn-sm danger"
-    onClick={async () => {
-      if (await confirmDialog({ title: 'Delete this post?', message: 'This removes it for good.', confirmText: 'Delete', tone: 'danger' })) {
-        repo.remove(x.col, x.id);
-      }
-    }}
-  >
-    Delete
-  </button>
-</div>
+              <button className="btn-sm" onClick={() => repo.update(x.col, x.id, { status: 'Active' })}>Restore</button>
+              <button
+                className="btn-sm danger"
+                onClick={async () => {
+                  if (await confirmDialog({ title: 'Delete this post?', message: 'This removes it for good.', confirmText: 'Delete', tone: 'danger' })) {
+                    repo.remove(x.col, x.id);
+                  }
+                }}
+              >
+                Delete
+              </button>
+            </div>
           </div>
           <small>Posted {formatDate(x.date)}</small>
           <div className="due-line"><Badge tone={x.kind === 'Activity' ? 'amber' : 'blue'}>{x.kind}</Badge></div>

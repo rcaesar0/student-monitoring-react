@@ -1385,3 +1385,106 @@ html[data-theme='dark'] .auth-card input:-webkit-autofill:active {
 /* Firefox */
 input:autofill { background-color: var(--surface) !important; color: var(--text) !important; }
 html[data-theme='dark'] .auth-card input:autofill { background-color: #0f1a2d !important; }
+
+/* ============ Date field (the box that opens the calendar) ============ */
+button.datefield {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; height: auto; min-height: 46px; max-height: 54px; align-self: start;
+  padding: 11px 13px; text-align: left; font-weight: 500;
+  background: var(--surface); color: var(--text);
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+}
+button.datefield:hover { transform: none; border-color: var(--primary); }
+button.datefield:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+button.datefield.empty span { color: var(--muted); }
+button.datefield svg { flex: none; color: var(--muted); }
+button.datefield:disabled { opacity: .55; cursor: not-allowed; }
+
+/* ============ Logo in the top bar goes to the home page ============ */
+.logo-btn { padding: 0; background: transparent; box-shadow: none; border-radius: 12px; display: flex; flex: none; }
+.logo-btn:hover { transform: none; opacity: .85; }
+.logo-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* ============ Undo bar ============ */
+.undo-bar {
+  position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  z-index: 900; width: min(420px, calc(100vw - 24px)); box-sizing: border-box;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px 14px; border-radius: 14px; overflow: hidden;
+  background: #1f2a44; color: #fff; font-size: 14px; font-weight: 600;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .35); animation: fade .15s ease;
+}
+.undo-bar span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.undo-btn { flex: none; padding: 6px 12px; border-radius: 999px; background: rgba(255, 255, 255, .16); color: #8cc8ff; font-weight: 800; }
+.undo-btn:hover { background: rgba(255, 255, 255, .26); transform: none; }
+.undo-bar i {
+  position: absolute; left: 0; bottom: 0; height: 4px; width: 100%; background: #4cb8ff;
+  animation: undo-run var(--undo-secs, 6s) linear forwards;
+}
+@keyframes undo-run { from { width: 100%; } to { width: 0; } }
+@media (prefers-reduced-motion: reduce) { .undo-bar { animation: none; } }
+/* In-app dialogs (DialogHost) */
+.dlg-backdrop {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  animation: dlg-fade 0.15s ease-out;
+}
+.dlg-box {
+  width: min(380px, 100%); text-align: center;
+  padding: 24px 22px 18px; border-radius: 20px;
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  animation: dlg-pop 0.18s ease-out;
+}
+.dlg-icon {
+  width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.dlg-icon.is-danger { background: rgba(239, 68, 68, 0.14); color: #ef4444; }
+.dlg-icon.is-info { background: var(--primary-soft); color: var(--primary); }
+.dlg-title { margin: 0 0 6px; font-size: 1.05rem; color: var(--text); }
+.dlg-message { margin: 0; font-size: 0.92rem; color: var(--muted); white-space: pre-line; }
+.dlg-actions { display: flex; gap: 10px; margin-top: 18px; }
+.dlg-btn {
+  flex: 1; min-height: 42px; border-radius: 12px; font: inherit; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--text);
+}
+.dlg-btn:hover { background: var(--primary-soft); }
+.dlg-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.dlg-primary:hover { background: var(--primary-600); }
+.dlg-danger { background: #ef4444; border-color: #ef4444; color: #fff; }
+.dlg-danger:hover { background: #dc2626; }
+@keyframes dlg-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dlg-pop { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+
+.list-card.clickable { cursor: pointer; }
+.list-card.clickable:hover { border-color: var(--primary); }
+.list-card.clickable:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Undo bar: uses the theme variables, so it follows light and dark automatically */
+.undo-bar {
+  position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%);
+  z-index: 9000; width: min(420px, calc(100% - 32px));
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px 15px; border-radius: 14px; overflow: hidden;
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow, 0 10px 30px rgba(15, 23, 42, 0.18));
+  font-size: 0.9rem;
+}
+.undo-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.undo-bar .undo-btn {
+  background: transparent; border: 0; padding: 4px 8px; border-radius: 8px;
+  color: var(--primary); font: inherit; font-weight: 700; cursor: pointer;
+}
+.undo-bar .undo-btn:hover { background: var(--primary-soft); }
+.undo-bar i {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+  background: var(--primary); transform-origin: left;
+  animation: undo-run var(--undo-secs, 6s) linear forwards;
+}
+@keyframes undo-run { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+

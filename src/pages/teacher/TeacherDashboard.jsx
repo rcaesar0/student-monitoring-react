@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Shell from '../../components/Shell';
+import { usePersistentState } from '../../utils/usePersistentState';
 import ProfilePanel from '../../components/ProfilePanel';
 import RoomPicker from '../../components/RoomPicker';
 import Chat from '../../components/Chat';
@@ -29,8 +30,9 @@ const NEEDS_ROOM = ['My Rooms', 'Attendance', 'Grades', 'Posts'];
 
 export default function TeacherDashboard() {
   const { db, user, logout, theme, toggleTheme } = useApp();
-  const [view, setView] = useState('Dashboard');
-  const [roomId, setRoomId] = useState('');
+  // Remembered across a reload, so the teacher stays on the page they were on.
+  const [view, setView] = usePersistentState(`sm_nav_teacher_${user.id}_view`, 'Dashboard', (v) => [...NAV, ...OVERLAYS].includes(v));
+  const [roomId, setRoomId] = usePersistentState(`sm_nav_teacher_${user.id}_room`, '', (v) => typeof v === 'string');
 
   // Rooms are assigned by the admin. Teachers never create their own.
   const rooms = db.rooms.filter((r) => r.teacherId === user.id && r.status === 'Active');

@@ -10,10 +10,11 @@ import { roomsOfStudent, attendanceSummary } from '../../utils/selectors';
 import { slotsOf } from '../../utils/schedule';
 import { isPastDue } from '../../utils/autoArchive';
 import { roomStyle } from '../../utils/roomThemes';
+import { showPost } from '../../utils/postDetail';
 
 // Guardian home. Order: link notes, messages from a teacher, school announcements, today's classes,
 // coming up, then the rooms each child has joined.
-// "Coming up" only points to scheduled class posts (title, type, date). The full post is in the Updates tab.
+// "Coming up" opens the floating detail card for the post. The full list is in the Updates tab.
 export default function ChildrenTab({ kids, goLink, openRoom }) {
   const { db, repo, user } = useApp();
   const pending = db.guardianLinks.filter((l) => l.guardianId === user.id && l.status === 'Pending');
@@ -111,7 +112,14 @@ export default function ChildrenTab({ kids, goLink, openRoom }) {
               const room = db.rooms.find((r) => r.id === x.roomId);
               const names = kidsByRoom.get(x.roomId).map((c) => c.firstName).join(', ');
               return (
-                <button className="due-row" key={`${x.kind}-${x.id}`} onClick={() => openRoom(x.roomId, 'Updates')}>
+                <button
+                  className="due-row"
+                  key={`${x.kind}-${x.id}`}
+                  onClick={() => showPost(x, {
+                    badge: x.kind === 'Announcement' ? 'Class announcement' : x.kind,
+                    room: `${room?.subject} · ${room?.name}`,
+                  })}
+                >
                   <span className="due-text">
                     <b>{x.title}</b>
                     <small>{x.kind === 'Announcement' ? 'Class announcement' : x.kind} · {room?.subject} · {room?.name}{kids.length > 1 ? ` · ${names}` : ''}</small>

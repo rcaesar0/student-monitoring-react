@@ -6,6 +6,8 @@ import DateField from '../../components/DateField';
 import { dateStr, formatDate, dueInfo } from '../../utils/helpers';
 import { CATEGORY_NAMES } from '../../utils/grading';
 import { DEFAULT_QUARTER } from '../../config';
+import UndoBar from '../../components/UndoBar';
+import { showPost, cardProps } from '../../utils/postDetail';
 
 // Quiz and Exam are added directly in Grades, so they are not offered when posting.
 const POST_TYPES = CATEGORY_NAMES.filter((c) => c !== 'Quiz' && c !== 'Exam');
@@ -15,14 +17,22 @@ const POST_TYPES = CATEGORY_NAMES.filter((c) => c !== 'Quiz' && c !== 'Exam');
 // A posted activity is also added to the Grades page as a draft assessment, so activities always belong to one room.
 // An announcement can go to this room only, or to all of the teacher's rooms. Each room gets its own copy
 // (linked by groupId), so every copy lives in its room and can be archived there without touching the others.
+// Clicking a post opens the floating detail card.
 export default function PostsTab({ room, collection, label }) {
   const { db, repo, user } = useApp();
   const [adding, setAdding] = useState(false);
+  const [undo, setUndo] = useState(null);
   const myRooms = db.rooms.filter((r) => r.teacherId === user.id && r.status === 'Active');
   const items = db[collection]
     .filter((x) => x.roomId === room.id && x.status !== 'Archived')
     .sort((a, b) => b.date.localeCompare(a.date));
   const assessmentOf = (post) => db.assessments.find((a) => a.postId === post.id);
+
+  // The post leaves the list right away and goes to the Archive tab. A short Undo bar brings it back.
+  const archive = (x) => {
+    repo.update(collection, x.id, { status: 'Archived' });
+    setUndo({ id: x.id, message: `“${x.title}” moved to Archive` });
+  };
 
   return (
     <>
@@ -32,10 +42,14 @@ export default function PostsTab({ room, collection, label }) {
             const info = dueInfo({ ...x, kind: label });
             const graded = assessmentOf(x);
             return (
-              <div className="list-card" key={x.id}>
+              <div
+                className="list-card clickable"
+                key={x.id}
+                {...cardProps(() => showPost(x, { badge: label === 'Announcement' ? 'Class announcement' : label, room: room.name }))}
+              >
                 <div className="row-actions spread">
                   <b>{x.title}</b>
-                  <button className="btn-sm" onClick={() => repo.update(collection, x.id, { status: 'Archived' })}>Archive</button>
+                  <button className="btn-sm" onClick={() => archive(x)}>Archive</button>
                 </div>
                 <small>Posted {formatDate(x.date)}</small>
                 {(info || graded || x.groupId) && (
@@ -54,6 +68,14 @@ export default function PostsTab({ room, collection, label }) {
           <Empty text={`No ${label.toLowerCase()}s yet.`} />
         )}
       </Panel>
+      {undo && (
+        <UndoBar
+          key={undo.id}
+          message={undo.message}
+          onUndo={() => { repo.update(collection, undo.id, { status: 'Active' }); setUndo(null); }}
+          onClose={() => setUndo(null)}
+        />
+      )}
       {adding && (
         <PostModal
           label={label}

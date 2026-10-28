@@ -5,12 +5,29 @@ import { dateStr, formatDate } from '../../utils/helpers';
 import { AUDIENCES } from '../../utils/schoolPosts';
 import { confirmDialog } from '../../utils/dialog';
 import DateField from '../../components/DateField';
+import UndoBar from '../../components/UndoBar';
 
 // Announcements for the whole school. Teachers and guardians see them on their home page and in the bell.
+// Archived announcements move to the Archives page (top-right menu), where they can be restored.
 export default function SchoolPostsTab() {
   const { db, repo, user } = useApp();
   const [adding, setAdding] = useState(false);
-  const posts = [...(db.schoolPosts || [])].sort((a, b) => (a.status === 'Archived') - (b.status === 'Archived') || b.date.localeCompare(a.date));
+  const [undo, setUndo] = useState(null); // { id, title }
+
+  const posts = [...(db.schoolPosts || [])]
+    .filter((p) => p.status !== 'Archived')
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  function archive(p) {
+    repo.update('schoolPosts', p.id, { status: 'Archived' });
+    setUndo({ id: p.id, title: p.title });
+  }
+
+  function undoArchive() {
+    if (!undo) return;
+    repo.update('schoolPosts', undo.id, { status: 'Active' });
+    setUndo(null);
+  }
 
   async function remove(p) {
     if (await confirmDialog({ title: `Delete “${p.title}”?`, message: 'This removes it for good.', confirmText: 'Delete', tone: 'danger' })) repo.remove('schoolPosts', p.id);
@@ -21,22 +38,29 @@ export default function SchoolPostsTab() {
       <Panel title="School announcements" actions={<button className="primary" onClick={() => setAdding(true)}>+ New announcement</button>}>
         <p className="muted">For things everyone should know: class suspensions, exam weeks, meetings. They are not tied to one room.</p>
         {posts.length ? posts.map((p) => (
-          <div className={`list-card ${p.status === 'Archived' ? 'is-done' : ''}`} key={p.id}>
+          <div className="list-card" key={p.id}>
             <div className="row-actions spread">
               <b>{p.title}</b>
-              <Badge tone={p.status === 'Archived' ? 'neutral' : 'blue'}>{p.status === 'Archived' ? 'Archived' : p.audience}</Badge>
+              <Badge tone="blue">{p.audience}</Badge>
             </div>
             <small>Posted {formatDate(p.date)}{p.until ? ` · Shown until ${formatDate(p.until)}` : ''}</small>
             {p.body && <p>{p.body}</p>}
             <div className="row-actions">
-              <button className="btn-sm" onClick={() => repo.update('schoolPosts', p.id, { status: p.status === 'Archived' ? 'Active' : 'Archived' })}>
-                {p.status === 'Archived' ? 'Show again' : 'Archive'}
-              </button>
+              <button className="btn-sm" onClick={() => archive(p)}>Archive</button>
               <button className="danger-outline btn-sm" onClick={() => remove(p)}>Delete</button>
             </div>
           </div>
         )) : <Empty text="No school announcements yet." />}
       </Panel>
+
+      {undo && (
+        <UndoBar
+          key={undo.id}
+          message="Moved to Archives"
+          onUndo={undoArchive}
+          onClose={() => setUndo(null)}
+        />
+      )}
 
       {adding && (
         <NewPost
